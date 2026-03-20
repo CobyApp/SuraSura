@@ -38,6 +38,7 @@ public struct HomeReducer {
         case translation(TranslationReducer.Action)
         case startSessionTapped
         case stopSessionTapped
+        case startTopSessionTapped  // 상단 패널 마이크 — 언어 방향 반전 후 녹음 시작
         case swapLanguagesTapped
         case toggleFaceToFaceTapped
         case colorSchemeChanged(AppColorScheme)
@@ -77,6 +78,19 @@ public struct HomeReducer {
             case .stopSessionTapped:
                 state.isSessionActive = false
                 return .send(.speechRecognition(.stopListening))
+
+            case .startTopSessionTapped:
+                // 이미 세션 중이면 무시 (상대방이 실수로 탭하는 경우 방지)
+                guard !state.isSessionActive else { return .none }
+                state.isSessionActive = true
+                let src = state.speechRecognition.sourceLanguage
+                let tgt = state.translation.targetLanguage
+                // 언어 방향 반전 후 순차적으로 녹음 시작
+                return .run { send in
+                    await send(.speechRecognition(.languageChanged(tgt)))
+                    await send(.translation(.languageChanged(src)))
+                    await send(.speechRecognition(.startListening))
+                }
 
             case .swapLanguagesTapped:
                 let src = state.speechRecognition.sourceLanguage

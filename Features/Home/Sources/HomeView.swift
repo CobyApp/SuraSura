@@ -27,13 +27,14 @@ public struct HomeView: View {
             }
             .ignoresSafeArea()
 
-            // 콘텐츠
-            VStack(spacing: 0) {
-                translationPanel
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                recognitionPanel
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // 콘텐츠 — GeometryReader로 패널 높이 1:1 픽셀 고정 (isFaceToFaceMode 전환 시 높이 불변)
+            GeometryReader { geo in
+                VStack(spacing: 0) {
+                    translationPanel
+                        .frame(width: geo.size.width, height: geo.size.height / 2)
+                    recognitionPanel
+                        .frame(width: geo.size.width, height: geo.size.height / 2)
+                }
             }
         }
         .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
@@ -104,7 +105,7 @@ public struct HomeView: View {
             translationText
                 .padding(.horizontal, 24)
                 .padding(.top, 24)
-                .padding(.bottom, 104)
+                .padding(.bottom, 130)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
@@ -146,7 +147,11 @@ public struct HomeView: View {
     }
 
     private var translationBottomRow: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 10) {
+            // 상단 녹음 버튼 — 대면 모드에서 상대방이 사용 (언어 반전 후 녹음)
+            MicButton(isActive: store.isSessionActive, color: Color.white.opacity(0.3)) {
+                store.send(store.isSessionActive ? .stopSessionTapped : .startTopSessionTapped)
+            }
             Spacer()
             panelLangButton(language: store.translation.targetLanguage, fg: .white) {
                 store.send(.showTopPicker)

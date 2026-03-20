@@ -1,0 +1,5 @@
+/* 麦克风权限 */
+"NSMicrophoneUsageDescription" = "需要麦克风权限以进行实时翻译。";
+
+/* 语音识别权限 */
+"NSSpeechRecognitionUsageDescription" = "需要语音识别权限以进行实时语音识别。";

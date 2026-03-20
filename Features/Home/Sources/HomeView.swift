@@ -6,6 +6,7 @@ private let kBlue = Color(red: 0.11, green: 0.53, blue: 0.87)
 
 public struct HomeView: View {
     @Bindable var store: StoreOf<HomeReducer>
+    @State private var faceFlash = false
 
     public init(store: StoreOf<HomeReducer>) { self.store = store }
 
@@ -85,29 +86,34 @@ public struct HomeView: View {
                     onSelect: { store.send(.translation(.languageChanged($0))) },
                     onDismiss: { store.send(.hideTopPicker) }
                 )
-                // rotationEffect 대신 scaleEffect 사용 → 레이아웃 높이에 영향 없음
-                // scaleEffect(x:-1, y:-1) = 180° 회전과 시각적으로 동일
                 .scaleEffect(x: store.isFaceToFaceMode ? -1 : 1,
                              y: store.isFaceToFaceMode ? -1 : 1)
                 .animation(nil, value: store.isFaceToFaceMode)
             } else {
-                // 대면 OFF: 정방향
-                if !store.isFaceToFaceMode {
-                    translationContent
-                        .transition(.opacity)
-                }
-                // 대면 ON: scaleEffect(x:-1,y:-1)로 뒤집기 — 레이아웃 불변
-                if store.isFaceToFaceMode {
-                    translationContent
-                        .scaleEffect(x: -1, y: -1)
-                        .transition(.opacity)
+                // 단일 인스턴스 — scaleEffect로 뒤집기, 레이아웃 높이 불변
+                translationContent
+                    .scaleEffect(x: store.isFaceToFaceMode ? -1 : 1,
+                                 y: store.isFaceToFaceMode ? -1 : 1)
+                    .animation(nil, value: store.isFaceToFaceMode)
+            }
+            // 전환 시 짧은 플래시로 즉각 뒤집기를 부드럽게 마스킹
+            if faceFlash {
+                kBlue
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.15), value: faceFlash)
+        .animation(.easeInOut(duration: 0.22), value: store.isTopPickerPresented)
+        .onChange(of: store.isFaceToFaceMode) { _, _ in
+            withAnimation(.easeInOut(duration: 0.1)) {
+                faceFlash = true
+            } completion: {
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    faceFlash = false
                 }
             }
         }
-        // 대면 전환: opacity 크로스페이드 (회전 없음, 레이아웃 안 변함)
-        .animation(.easeInOut(duration: 0.22), value: store.isFaceToFaceMode)
-        // 피커 슬라이드 전환
-        .animation(.easeInOut(duration: 0.22), value: store.isTopPickerPresented)
     }
 
     private var translationContent: some View {

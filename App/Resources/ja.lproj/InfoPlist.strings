@@ -1,0 +1,5 @@
+/* マイク権限 */
+"NSMicrophoneUsageDescription" = "リアルタイム通訳のためにマイクが必要です。";
+
+/* 音声認識権限 */
+"NSSpeechRecognitionUsageDescription" = "リアルタイム音声認識のために権限が必要です。";

@@ -1,0 +1,5 @@
+/* 마이크 권한 */
+"NSMicrophoneUsageDescription" = "실시간 통역을 위해 마이크가 필요합니다.";
+
+/* 음성 인식 권한 */
+"NSSpeechRecognitionUsageDescription" = "실시간 음성 인식을 위해 권한이 필요합니다.";

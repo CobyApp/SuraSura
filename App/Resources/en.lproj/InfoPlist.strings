@@ -1,0 +1,5 @@
+/* Microphone permission */
+"NSMicrophoneUsageDescription" = "A microphone is required for real-time translation.";
+
+/* Speech recognition permission */
+"NSSpeechRecognitionUsageDescription" = "Permission is required for real-time speech recognition.";

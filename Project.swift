@@ -87,6 +87,9 @@ let project = Project(
             bundleId: "\(bundleIdPrefix).feature.home",
             deploymentTargets: deploymentTarget,
             sources: ["Features/Home/Sources/**"],
+            resources: [
+                .glob(pattern: "Features/Home/Sources/Resources/**"),
+            ],
             dependencies: [
                 .target(name: "SpeechRecognitionFeature"),
                 .target(name: "TranslationFeature"),

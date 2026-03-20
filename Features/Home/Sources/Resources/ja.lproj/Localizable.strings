@@ -1,0 +1,18 @@
+/* パネル */
+"panel.translation" = "翻訳";
+"panel.listening" = "聞き取り中";
+
+/* 設定 */
+"settings.title" = "設定";
+"settings.done" = "完了";
+"settings.appearance" = "外観";
+"settings.appearance.system" = "システムデフォルト";
+"settings.appearance.light" = "ライトモード";
+"settings.appearance.dark" = "ダークモード";
+
+/* アクセシビリティ */
+"a11y.face_to_face" = "対面モード";
+"a11y.settings" = "設定";
+"a11y.swap_languages" = "言語を交換";
+"a11y.record" = "録音開始";
+"a11y.stop" = "録音停止";

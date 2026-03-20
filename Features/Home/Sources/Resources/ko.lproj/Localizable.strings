@@ -1,0 +1,18 @@
+/* 패널 */
+"panel.translation" = "번역";
+"panel.listening" = "인식 중";
+
+/* 설정 */
+"settings.title" = "설정";
+"settings.done" = "완료";
+"settings.appearance" = "외관";
+"settings.appearance.system" = "시스템 기본값";
+"settings.appearance.light" = "라이트 모드";
+"settings.appearance.dark" = "다크 모드";
+
+/* 접근성 */
+"a11y.face_to_face" = "대면 대화 모드";
+"a11y.settings" = "설정";
+"a11y.swap_languages" = "언어 전환";
+"a11y.record" = "녹음 시작";
+"a11y.stop" = "녹음 중지";

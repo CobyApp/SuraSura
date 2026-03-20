@@ -1,0 +1,18 @@
+/* Panels */
+"panel.translation" = "Translation";
+"panel.listening" = "Listening";
+
+/* Settings */
+"settings.title" = "Settings";
+"settings.done" = "Done";
+"settings.appearance" = "Appearance";
+"settings.appearance.system" = "System Default";
+"settings.appearance.light" = "Light Mode";
+"settings.appearance.dark" = "Dark Mode";
+
+/* Accessibility */
+"a11y.face_to_face" = "Face-to-Face Mode";
+"a11y.settings" = "Settings";
+"a11y.swap_languages" = "Swap Languages";
+"a11y.record" = "Start Recording";
+"a11y.stop" = "Stop Recording";

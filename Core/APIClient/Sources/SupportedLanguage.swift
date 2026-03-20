@@ -122,3 +122,61 @@ public enum SupportedLanguage: String, CaseIterable, Equatable, Sendable {
         }
     }
 }
+
+extension SupportedLanguage {
+    // MARK: - Flag Emoji
+
+    public var flag: String {
+        switch self {
+        case .korean:             return "🇰🇷"
+        case .english:            return "🇺🇸"
+        case .japanese:           return "🇯🇵"
+        case .chineseSimplified:  return "🇨🇳"
+        case .chineseTraditional: return "🇹🇼"
+        case .spanish:            return "🇪🇸"
+        case .french:             return "🇫🇷"
+        case .german:             return "🇩🇪"
+        case .italian:            return "🇮🇹"
+        case .portuguese:         return "🇧🇷"
+        case .russian:            return "🇷🇺"
+        case .arabic:             return "🇸🇦"
+        case .dutch:              return "🇳🇱"
+        case .turkish:            return "🇹🇷"
+        case .vietnamese:         return "🇻🇳"
+        case .indonesian:         return "🇮🇩"
+        case .thai:               return "🇹🇭"
+        case .polish:             return "🇵🇱"
+        case .hindi:              return "🇮🇳"
+        case .swedish:            return "🇸🇪"
+        case .nepali:             return "🇳🇵"
+        }
+    }
+
+    // MARK: - Short Name for UI
+
+    public var shortName: String {
+        switch self {
+        case .korean:             return "한국어"
+        case .english:            return "English"
+        case .japanese:           return "日本語"
+        case .chineseSimplified:  return "中文(简)"
+        case .chineseTraditional: return "中文(繁)"
+        case .spanish:            return "Español"
+        case .french:             return "Français"
+        case .german:             return "Deutsch"
+        case .italian:            return "Italiano"
+        case .portuguese:         return "Português"
+        case .russian:            return "Русский"
+        case .arabic:             return "العربية"
+        case .dutch:              return "Nederlands"
+        case .turkish:            return "Türkçe"
+        case .vietnamese:         return "Việt"
+        case .indonesian:         return "Indonesia"
+        case .thai:               return "ไทย"
+        case .polish:             return "Polski"
+        case .hindi:              return "हिन्दी"
+        case .swedish:            return "Svenska"
+        case .nepali:             return "नेपाली"
+        }
+    }
+}

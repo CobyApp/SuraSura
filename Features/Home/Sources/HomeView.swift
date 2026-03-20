@@ -90,10 +90,25 @@ public struct HomeView: View {
                     onSelect: { store.send(.translation(.languageChanged($0))) },
                     onDismiss: { store.send(.hideTopPicker) }
                 )
+                // 피커는 현재 모드 그대로 즉시 반영 (회전 애니메이션 없음)
+                .rotationEffect(store.isFaceToFaceMode ? .degrees(180) : .zero)
             } else {
+                // 정방향 콘텐츠 — 대면 모드가 아닐 때만 보임
                 translationContent
+                    .opacity(store.isFaceToFaceMode ? 0 : 1)
+                    .scaleEffect(store.isFaceToFaceMode ? 0.96 : 1.0)
+                    .allowsHitTesting(!store.isFaceToFaceMode)
+
+                // 180° 뒤집힌 콘텐츠 — 대면 모드일 때만 보임
+                translationContent
+                    .rotationEffect(.degrees(180))
+                    .opacity(store.isFaceToFaceMode ? 1 : 0)
+                    .scaleEffect(store.isFaceToFaceMode ? 1.0 : 0.96)
+                    .allowsHitTesting(store.isFaceToFaceMode)
             }
         }
+        // 대면 전환: 스핀 없이 페이드+스케일 크로스페이드
+        .animation(.easeInOut(duration: 0.28), value: store.isFaceToFaceMode)
         .animation(.easeInOut(duration: 0.22), value: store.isTopPickerPresented)
     }
 

@@ -7,8 +7,11 @@
 "settings.done" = "完了";
 "settings.appearance" = "外観";
 "settings.appearance.system" = "システムデフォルト";
+"settings.appearance.system.short" = "システム";
 "settings.appearance.light" = "ライトモード";
+"settings.appearance.light.short" = "ライト";
 "settings.appearance.dark" = "ダークモード";
+"settings.appearance.dark.short" = "ダーク";
 
 /* アクセシビリティ */
 "a11y.face_to_face" = "対面モード";

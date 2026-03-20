@@ -1,0 +1,29 @@
+/* 面板 */
+"panel.translation" = "翻译";
+"panel.listening" = "聆听中";
+
+/* 设置 */
+"settings.title" = "设置";
+"settings.done" = "完成";
+"settings.appearance" = "外观";
+"settings.appearance.system" = "跟随系统";
+"settings.appearance.system.short" = "系统";
+"settings.appearance.light" = "浅色模式";
+"settings.appearance.light.short" = "浅色";
+"settings.appearance.dark" = "深色模式";
+"settings.appearance.dark.short" = "深色";
+
+/* 无障碍 */
+"a11y.face_to_face" = "面对面对话模式";
+"a11y.settings" = "设置";
+"a11y.swap_languages" = "切换语言";
+"a11y.record" = "开始录音";
+"a11y.stop" = "停止录音";
+
+/* 翻译设置 */
+"settings.translation" = "翻译";
+"settings.auto_speak" = "翻译后自动朗读";
+"settings.auto_speak.footer" = "翻译完成后，自动以对方语言朗读。";
+
+/* 语言选择 */
+"picker.back" = "返回";

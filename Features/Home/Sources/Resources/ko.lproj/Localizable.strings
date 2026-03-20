@@ -7,8 +7,11 @@
 "settings.done" = "완료";
 "settings.appearance" = "외관";
 "settings.appearance.system" = "시스템 기본값";
+"settings.appearance.system.short" = "시스템";
 "settings.appearance.light" = "라이트 모드";
+"settings.appearance.light.short" = "라이트";
 "settings.appearance.dark" = "다크 모드";
+"settings.appearance.dark.short" = "다크";
 
 /* 접근성 */
 "a11y.face_to_face" = "대면 대화 모드";

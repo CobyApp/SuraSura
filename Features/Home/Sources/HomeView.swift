@@ -37,7 +37,10 @@ public struct HomeView: View {
         }
         .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
         .sheet(isPresented: settingsBinding) {
-            SettingsView(store: store).presentationDetents([.medium])
+            SettingsView(store: store)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.hidden)
+                .presentationCornerRadius(24)
         }
     }
 

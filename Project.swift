@@ -38,7 +38,7 @@ func appSettings() -> Settings {
 let project = Project(
     name: "SuraSura",
     options: .options(
-        defaultKnownRegions: ["ko", "en", "ja"],
+        defaultKnownRegions: ["ko", "en", "ja", "zh-Hans"],
         developmentRegion: "ko"
     ),
     settings: .settings(

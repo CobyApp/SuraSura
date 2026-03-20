@@ -7,8 +7,11 @@
 "settings.done" = "Done";
 "settings.appearance" = "Appearance";
 "settings.appearance.system" = "System Default";
+"settings.appearance.system.short" = "System";
 "settings.appearance.light" = "Light Mode";
+"settings.appearance.light.short" = "Light";
 "settings.appearance.dark" = "Dark Mode";
+"settings.appearance.dark.short" = "Dark";
 
 /* Accessibility */
 "a11y.face_to_face" = "Face-to-Face Mode";

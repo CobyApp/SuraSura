@@ -4,66 +4,74 @@ import APIClient
 
 struct LanguageSelectorView: View {
     let store: StoreOf<HomeReducer>
-    @State private var isSwapping = false
+    @State private var swapAngle: Double = 0
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 8) {
             // 출발 언어
             languagePicker(
-                selected: store.speechRecognition.sourceLanguage,
+                language: store.speechRecognition.sourceLanguage,
                 onSelect: { store.send(.speechRecognition(.languageChanged($0))) }
             )
 
-            // 양방향 스왑 버튼
+            // 스왑 버튼
             Button {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
-                    isSwapping.toggle()
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    swapAngle += 180
                 }
                 store.send(.swapLanguagesTapped)
             } label: {
                 Image(systemName: "arrow.left.arrow.right")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.primary)
-                    .frame(width: 44, height: 44)
-                    .background(.thinMaterial, in: Circle())
-                    .rotationEffect(.degrees(isSwapping ? 180 : 0))
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(Color.secondary)
+                    .frame(width: 36, height: 36)
+                    .background(Color(.tertiarySystemFill), in: Circle())
+                    .rotationEffect(.degrees(swapAngle))
             }
             .buttonStyle(.plain)
 
             // 도착 언어
             languagePicker(
-                selected: store.translation.targetLanguage,
+                language: store.translation.targetLanguage,
                 onSelect: { store.send(.translation(.languageChanged($0))) }
             )
         }
-        .padding(.horizontal, 16)
     }
 
     private func languagePicker(
-        selected: SupportedLanguage,
+        language: SupportedLanguage,
         onSelect: @escaping (SupportedLanguage) -> Void
     ) -> some View {
         Menu {
-            ForEach(SupportedLanguage.allCases, id: \.self) { language in
-                Button(language.displayName) { onSelect(language) }
+            ForEach(SupportedLanguage.allCases, id: \.self) { lang in
+                Button {
+                    onSelect(lang)
+                } label: {
+                    Label(lang.displayName, image: "")
+                        .labelStyle(.titleOnly)
+                }
             }
         } label: {
-            HStack(spacing: 6) {
-                Text(selected.flag)
-                    .font(.title3)
-                Text(selected.displayName)
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-                Image(systemName: "chevron.down")
-                    .font(.caption2.weight(.bold))
-                    .opacity(0.6)
-            }
-            .foregroundStyle(.primary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+            pickerLabel(language)
         }
         .buttonStyle(.plain)
+    }
+
+    private func pickerLabel(_ language: SupportedLanguage) -> some View {
+        HStack(spacing: 6) {
+            Text(language.flag)
+                .font(.system(size: 18))
+            Text(language.shortName)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.primary)
+                .lineLimit(1)
+            Image(systemName: "chevron.down")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(Color.secondary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
+        .frame(maxWidth: .infinity)
+        .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 12))
     }
 }

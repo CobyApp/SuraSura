@@ -8,7 +8,6 @@ public struct HomeView: View {
         self.store = store
     }
 
-    // isSettingsPresented를 수동 Binding으로 처리 (TCA @ObservableState get-only 우회)
     private var settingsBinding: Binding<Bool> {
         Binding(
             get: { store.isSettingsPresented },
@@ -17,17 +16,20 @@ public struct HomeView: View {
     }
 
     public var body: some View {
-        GeometryReader { geo in
-            ZStack {
-                backgroundGradient
-                VStack(spacing: 0) {
-                    translationPanel(geo: geo)
-                    controlBar
-                    recognitionPanel(geo: geo)
-                }
+        ZStack {
+            // 배경: 안전영역 밖까지 확장
+            backgroundGradient
+                .ignoresSafeArea()
+
+            // 콘텐츠: safe area 자연 존중
+            VStack(spacing: 0) {
+                translationPanel
+                divider
+                controlBar
+                divider
+                recognitionPanel
             }
         }
-        .ignoresSafeArea()
         .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
         .sheet(isPresented: settingsBinding) {
             SettingsView(store: store)
@@ -41,17 +43,23 @@ public struct HomeView: View {
         LinearGradient(
             colors: [
                 Color(.systemBackground),
-                Color(.systemBackground).opacity(0.95)
+                Color(.secondarySystemBackground)
             ],
             startPoint: .top,
             endPoint: .bottom
         )
-        .ignoresSafeArea()
     }
 
-    // MARK: - 상단 패널 (번역 결과 — 대면모드 시 180° 플립)
+    // MARK: - 구분선
 
-    private func translationPanel(geo: GeometryProxy) -> some View {
+    private var divider: some View {
+        Divider()
+            .padding(.horizontal, 20)
+    }
+
+    // MARK: - 상단 번역 패널
+
+    private var translationPanel: some View {
         TranscriptionCardView(
             title: String(localized: "panel.translation", bundle: .module),
             text: store.translation.translatedText,
@@ -65,79 +73,83 @@ public struct HomeView: View {
                 }
             }
         )
-        .frame(height: geo.size.height * 0.40)
         .padding(.horizontal, 16)
-        .padding(.top, geo.safeAreaInsets.top + 8)
+        .padding(.top, 12)
+        .padding(.bottom, 12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - 중앙 컨트롤 바
 
     private var controlBar: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             LanguageSelectorView(store: store)
-
-            HStack(spacing: 0) {
-                // 설정 버튼
-                Button {
-                    store.send(.settingsTapped)
-                } label: {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 18))
-                        .foregroundStyle(Color.secondary)
-                        .frame(width: 52, height: 52)
-                        .background(.ultraThinMaterial, in: Circle())
-                }
-                .buttonStyle(.plain)
-
-                Spacer()
-
-                // 녹음 버튼
-                RecordButton(isActive: store.isSessionActive) {
-                    if store.isSessionActive {
-                        store.send(.stopSessionTapped)
-                    } else {
-                        store.send(.startSessionTapped)
-                    }
-                }
-
-                Spacer()
-
-                // 대면 모드 버튼
-                Button {
-                    store.send(.toggleFaceToFaceTapped)
-                } label: {
-                    Image(systemName: store.isFaceToFaceMode ? "person.2.fill" : "person.2")
-                        .font(.system(size: 18))
-                        .foregroundStyle(
-                            store.isFaceToFaceMode ? Color.accentColor : Color.secondary
-                        )
-                        .frame(width: 52, height: 52)
-                        .background(
-                            store.isFaceToFaceMode
-                                ? Color.accentColor.opacity(0.15)
-                                : Color.clear,
-                            in: Circle()
-                        )
-                        .background(.ultraThinMaterial, in: Circle())
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.horizontal, 32)
+            actionButtons
         }
-        .padding(.vertical, 16)
-        .background(.bar)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 18)
     }
 
-    // MARK: - 하단 패널 (음성 인식)
+    private var actionButtons: some View {
+        HStack {
+            // 설정 버튼
+            circleButton(icon: "gearshape.fill", tint: .secondary) {
+                store.send(.settingsTapped)
+            }
 
-    private func recognitionPanel(geo: GeometryProxy) -> some View {
+            Spacer()
+
+            // 녹음 버튼 (중앙, 가장 크게)
+            RecordButton(isActive: store.isSessionActive) {
+                store.send(store.isSessionActive ? .stopSessionTapped : .startSessionTapped)
+            }
+
+            Spacer()
+
+            // 대면 모드 버튼
+            circleButton(
+                icon: store.isFaceToFaceMode ? "person.2.fill" : "person.2",
+                tint: store.isFaceToFaceMode ? .accentColor : .secondary,
+                isActive: store.isFaceToFaceMode
+            ) {
+                store.send(.toggleFaceToFaceTapped)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func circleButton(
+        icon: String,
+        tint: Color,
+        isActive: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: 50, height: 50)
+                .background(
+                    isActive
+                        ? tint.opacity(0.15)
+                        : Color(.tertiarySystemFill),
+                    in: Circle()
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - 하단 인식 패널
+
+    private var recognitionPanel: some View {
         TranscriptionCardView(
             title: String(localized: "panel.listening", bundle: .module),
             text: store.speechRecognition.recognizedText,
             isActive: store.speechRecognition.isListening
         )
-        .frame(height: geo.size.height * 0.40)
         .padding(.horizontal, 16)
-        .padding(.bottom, geo.safeAreaInsets.bottom + 8)
+        .padding(.top, 12)
+        .padding(.bottom, 12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

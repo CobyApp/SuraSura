@@ -9,30 +9,32 @@ struct RecordButton: View {
     var body: some View {
         Button(action: action) {
             ZStack {
-                // 펄스 효과 (녹음 중일 때)
+                // 펄스 링 (녹음 중)
                 if isActive {
                     Circle()
-                        .fill(Color.red.opacity(0.3))
-                        .frame(width: 100, height: 100)
-                        .scaleEffect(isPulsing ? 1.3 : 1.0)
-                        .opacity(isPulsing ? 0 : 0.6)
+                        .stroke(Color.red.opacity(0.35), lineWidth: 2)
+                        .frame(width: 96, height: 96)
+                        .scaleEffect(isPulsing ? 1.45 : 1.0)
+                        .opacity(isPulsing ? 0 : 1)
                         .animation(
-                            .easeInOut(duration: 1.0).repeatForever(autoreverses: false),
+                            .easeOut(duration: 1.1).repeatForever(autoreverses: false),
                             value: isPulsing
                         )
                 }
 
                 // 버튼 본체
                 Circle()
-                    .fill(isActive ? Color.red : Color.white)
-                    .frame(width: 76, height: 76)
-                    .shadow(color: isActive ? .red.opacity(0.5) : .white.opacity(0.3),
-                            radius: 16, x: 0, y: 4)
+                    .fill(isActive ? Color.red : Color(.label))
+                    .frame(width: 68, height: 68)
+                    .shadow(
+                        color: isActive ? Color.red.opacity(0.45) : Color.black.opacity(0.18),
+                        radius: 12, x: 0, y: 4
+                    )
 
                 // 아이콘
                 Image(systemName: isActive ? "stop.fill" : "mic.fill")
-                    .font(.system(size: 28, weight: .semibold))
-                    .foregroundColor(isActive ? .white : .black)
+                    .font(.system(size: 26, weight: .semibold))
+                    .foregroundStyle(isActive ? Color.white : Color(.systemBackground))
             }
         }
         .buttonStyle(.plain)

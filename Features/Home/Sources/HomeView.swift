@@ -31,11 +31,6 @@ public struct HomeView: View {
             VStack(spacing: 0) {
                 translationPanel
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    // 패널 자체에 파란 배경 → 전체 네모가 돌아가는 것처럼 보임
-                    .background(kBlue)
-                    .rotationEffect(store.isFaceToFaceMode ? .degrees(180) : .zero)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.78),
-                               value: store.isFaceToFaceMode)
 
                 recognitionPanel
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -90,25 +85,15 @@ public struct HomeView: View {
                     onSelect: { store.send(.translation(.languageChanged($0))) },
                     onDismiss: { store.send(.hideTopPicker) }
                 )
-                // 피커는 현재 모드 그대로 즉시 반영 (회전 애니메이션 없음)
+                // 피커: 현재 대면 모드 상태를 즉시 반영 (애니메이션 없음)
                 .rotationEffect(store.isFaceToFaceMode ? .degrees(180) : .zero)
             } else {
-                // 정방향 콘텐츠 — 대면 모드가 아닐 때만 보임
+                // 콘텐츠: 대면 모드 여부에 따라 0° 또는 180° 즉시 표시 (애니메이션 없음)
                 translationContent
-                    .opacity(store.isFaceToFaceMode ? 0 : 1)
-                    .scaleEffect(store.isFaceToFaceMode ? 0.96 : 1.0)
-                    .allowsHitTesting(!store.isFaceToFaceMode)
-
-                // 180° 뒤집힌 콘텐츠 — 대면 모드일 때만 보임
-                translationContent
-                    .rotationEffect(.degrees(180))
-                    .opacity(store.isFaceToFaceMode ? 1 : 0)
-                    .scaleEffect(store.isFaceToFaceMode ? 1.0 : 0.96)
-                    .allowsHitTesting(store.isFaceToFaceMode)
+                    .rotationEffect(store.isFaceToFaceMode ? .degrees(180) : .zero)
             }
         }
-        // 대면 전환: 스핀 없이 페이드+스케일 크로스페이드
-        .animation(.easeInOut(duration: 0.28), value: store.isFaceToFaceMode)
+        // 피커 슬라이드 전환만 애니메이션 적용 (대면 모드 전환은 애니메이션 없음)
         .animation(.easeInOut(duration: 0.22), value: store.isTopPickerPresented)
     }
 

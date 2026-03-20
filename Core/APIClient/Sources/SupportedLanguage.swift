@@ -180,3 +180,40 @@ extension SupportedLanguage {
         }
     }
 }
+
+
+extension SupportedLanguage {
+    // MARK: - Locale Identifier (for Locale API)
+
+    public var localeIdentifier: String {
+        switch self {
+        case .korean:             return "ko"
+        case .english:            return "en"
+        case .japanese:           return "ja"
+        case .chineseSimplified:  return "zh-Hans"
+        case .chineseTraditional: return "zh-Hant"
+        case .spanish:            return "es"
+        case .french:             return "fr"
+        case .german:             return "de"
+        case .italian:            return "it"
+        case .portuguese:         return "pt"
+        case .russian:            return "ru"
+        case .arabic:             return "ar"
+        case .dutch:              return "nl"
+        case .turkish:            return "tr"
+        case .vietnamese:         return "vi"
+        case .indonesian:         return "id"
+        case .thai:               return "th"
+        case .polish:             return "pl"
+        case .hindi:              return "hi"
+        case .swedish:            return "sv"
+        case .nepali:             return "ne"
+        }
+    }
+
+    /// 현재 기기 언어 기준으로 언어 이름 반환
+    /// 예) 기기가 한국어면 "영어", 기기가 영어면 "Korean"
+    public var localizedName: String {
+        Locale.current.localizedString(forIdentifier: localeIdentifier) ?? displayName
+    }
+}

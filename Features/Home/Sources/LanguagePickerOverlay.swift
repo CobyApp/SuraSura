@@ -21,7 +21,9 @@ struct LanguagePickerOverlay: View {
                 languageList
             }
         }
-        .transition(.opacity.combined(with: .scale(scale: 0.97)))
+        // 패널 전체를 꽉 채워야 전환 시 레이아웃이 밀리지 않음
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .center)))
     }
 
     // MARK: - Header
@@ -67,9 +69,16 @@ struct LanguagePickerOverlay: View {
             HStack(spacing: 16) {
                 Text(lang.flag)
                     .font(.system(size: 28))
-                Text(lang.displayName)
-                    .font(.system(size: 17, weight: .regular))
-                    .foregroundStyle(rowFg)
+                VStack(alignment: .leading, spacing: 2) {
+                    // 기기 언어 기준 이름 (예: 기기가 한국어면 "영어")
+                    Text(lang.localizedName)
+                        .font(.system(size: 17, weight: .regular))
+                        .foregroundStyle(rowFg)
+                    // 해당 언어 자체 표기 (항상 고정)
+                    Text(lang.displayName)
+                        .font(.system(size: 12))
+                        .foregroundStyle(rowFg.opacity(0.45))
+                }
                 Spacer()
                 if lang == selected {
                     Image(systemName: "checkmark")
@@ -78,7 +87,7 @@ struct LanguagePickerOverlay: View {
                 }
             }
             .padding(.horizontal, 24)
-            .padding(.vertical, 16)
+            .padding(.vertical, 14)
         }
         .buttonStyle(.plain)
         .background(lang == selected ? accentColor.opacity(0.08) : Color.clear)

@@ -56,6 +56,7 @@ public struct HomeView: View {
                 translationContent
             }
         }
+        .animation(.easeInOut(duration: 0.22), value: store.isTopPickerPresented)
     }
 
     private var translationContent: some View {
@@ -128,6 +129,7 @@ public struct HomeView: View {
                 recognitionContent
             }
         }
+        .animation(.easeInOut(duration: 0.22), value: store.isBottomPickerPresented)
     }
 
     private var recognitionContent: some View {
@@ -211,18 +213,16 @@ public struct HomeView: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Text(language.flag).font(.system(size: 24))
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(language.shortName)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(fg)
-                    Text(language.displayName)
-                        .font(.system(size: 11))
-                        .foregroundStyle(fg.opacity(0.55))
-                }
+                Text(language.localizedName)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(fg)
+                    .lineLimit(1)
                 Image(systemName: "chevron.down")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(fg.opacity(0.5))
             }
+            // 최소 너비 고정 → 언어 전환 시 레이아웃 흔들림 방지
+            .frame(minWidth: 110, alignment: .trailing)
         }
         .buttonStyle(.plain)
     }

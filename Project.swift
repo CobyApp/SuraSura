@@ -24,6 +24,7 @@ func appSettings() -> Settings {
             "SWIFT_VERSION": "5.9",
             "DEVELOPMENT_TEAM": .string(developmentTeamId),
             "CODE_SIGN_STYLE": "Automatic",
+            "CODE_SIGN_IDENTITY": "Apple Development",
             "DEFINES_MODULE": "NO",
         ],
         configurations: [

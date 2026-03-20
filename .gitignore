@@ -1,0 +1,20 @@
+# Xcode
+*.xcodeproj
+*.xcworkspace
+!*.xcworkspace/contents.xcworkspacedata
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Tuist
+.build/
+Derived/
+
+# API Keys - 절대 커밋 금지!
+*.xcconfig
+Secrets.swift
+APIKeys+Live.swift
+
+# SPM
+.swiftpm/

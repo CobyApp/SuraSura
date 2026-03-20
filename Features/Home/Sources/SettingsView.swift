@@ -6,41 +6,59 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    ForEach(AppColorScheme.allCases, id: \.self) { scheme in
-                        Button {
-                            store.send(.colorSchemeChanged(scheme))
-                        } label: {
-                            HStack {
-                                Label(scheme.label, systemImage: scheme.icon)
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                if store.appColorScheme == scheme {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(.accentColor)
-                                        .fontWeight(.semibold)
-                                }
-                            }
-                        }
-                        .buttonStyle(.plain)
-                    }
-                } header: {
-                    Text(String(localized: "settings.appearance", bundle: .module))
-                }
+            appearanceSection
+                .navigationTitle(String(localized: "settings.title", bundle: .module))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar { doneButton }
+        }
+    }
+
+    // MARK: - 외관 섹션 (별도 프로퍼티로 분리 → 타입 체크 속도 향상)
+
+    private var appearanceSection: some View {
+        List {
+            Section {
+                colorSchemeRow(.system)
+                colorSchemeRow(.light)
+                colorSchemeRow(.dark)
+            } header: {
+                Text(String(localized: "settings.appearance", bundle: .module))
             }
-            .navigationTitle(String(localized: "settings.title", bundle: .module))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(String(localized: "settings.done", bundle: .module)) {
-                        store.send(.settingsDismissed)
-                    }
-                }
+        }
+    }
+
+    private func colorSchemeRow(_ scheme: AppColorScheme) -> some View {
+        Button {
+            store.send(.colorSchemeChanged(scheme))
+        } label: {
+            colorSchemeLabel(scheme)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func colorSchemeLabel(_ scheme: AppColorScheme) -> some View {
+        HStack {
+            Label(scheme.label, systemImage: scheme.icon)
+                .foregroundStyle(Color.primary)
+            Spacer()
+            if store.appColorScheme == scheme {
+                Image(systemName: "checkmark")
+                    .foregroundStyle(Color.accentColor)
+                    .fontWeight(.semibold)
+            }
+        }
+    }
+
+    private var doneButton: some ToolbarContent {
+        ToolbarItem(placement: .confirmationAction) {
+            Button(String(localized: "settings.done", bundle: .module)) {
+                store.send(.settingsDismissed)
             }
         }
     }
 }
+
+// MARK: - AppColorScheme UI Extensions
 
 extension AppColorScheme {
     var label: String {
@@ -50,6 +68,7 @@ extension AppColorScheme {
         case .dark:   return String(localized: "settings.appearance.dark", bundle: .module)
         }
     }
+
     var icon: String {
         switch self {
         case .system: return "circle.lefthalf.filled"
@@ -57,6 +76,7 @@ extension AppColorScheme {
         case .dark:   return "moon.fill"
         }
     }
+
     public var swiftUIColorScheme: ColorScheme? {
         switch self {
         case .system: return nil

@@ -20,14 +20,19 @@ public struct HomeView: View {
 
     public var body: some View {
         ZStack {
-            // 배경: Dynamic Island 포함 전체 채움
+            // 배경: GeometryReader와 동일한 safe area 기준으로 절반 분할
+            // → kBlue는 Dynamic Island 위로 확장, 흰색은 홈 인디케이터 아래로 확장
+            // → 배경 경계선 = 콘텐츠 경계선 (safe area 기준 정확히 일치)
             VStack(spacing: 0) {
-                kBlue.frame(maxWidth: .infinity, maxHeight: .infinity)
-                Color(.systemBackground).frame(maxWidth: .infinity, maxHeight: .infinity)
+                kBlue
+                    .ignoresSafeArea(edges: .top)
+                    .frame(maxHeight: .infinity)
+                Color(.systemBackground)
+                    .ignoresSafeArea(edges: .bottom)
+                    .frame(maxHeight: .infinity)
             }
-            .ignoresSafeArea()
 
-            // 콘텐츠 — GeometryReader로 패널 높이 1:1 픽셀 고정 (isFaceToFaceMode 전환 시 높이 불변)
+            // 콘텐츠 — GeometryReader로 패널 높이 1:1 픽셀 고정
             GeometryReader { geo in
                 VStack(spacing: 0) {
                     translationPanel

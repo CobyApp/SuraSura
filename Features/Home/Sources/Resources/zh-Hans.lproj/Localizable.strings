@@ -27,3 +27,7 @@
 
 /* 语言选择 */
 "picker.back" = "返回";
+
+/* 应用语言 */
+"settings.language" = "应用语言";
+"settings.language.system" = "跟随系统";

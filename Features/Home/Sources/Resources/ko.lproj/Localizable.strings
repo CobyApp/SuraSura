@@ -27,3 +27,7 @@
 
 /* 언어 피커 */
 "picker.back" = "뒤로";
+
+/* 앱 언어 */
+"settings.language" = "앱 언어";
+"settings.language.system" = "시스템 기본값";

@@ -14,6 +14,10 @@ public struct HomeView: View {
                 set: { if !$0 { store.send(.settingsDismissed) } })
     }
 
+    private var appBundle: Bundle {
+        Bundle.localizedModule(language: store.appLanguage)
+    }
+
     public var body: some View {
         ZStack {
             // 배경: Dynamic Island 포함 전체 채움
@@ -23,12 +27,14 @@ public struct HomeView: View {
             }
             .ignoresSafeArea()
 
-            // 콘텐츠: safe area 자연 존중
+            // 콘텐츠
             VStack(spacing: 0) {
                 translationPanel
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    // 패널 자체에 파란 배경 → 전체 네모가 돌아가는 것처럼 보임
+                    .background(kBlue)
                     .rotationEffect(store.isFaceToFaceMode ? .degrees(180) : .zero)
-                    .animation(.spring(response: 0.45, dampingFraction: 0.82),
+                    .animation(.spring(response: 0.5, dampingFraction: 0.78),
                                value: store.isFaceToFaceMode)
 
                 recognitionPanel
@@ -42,6 +48,34 @@ public struct HomeView: View {
                 .presentationDragIndicator(.hidden)
                 .presentationCornerRadius(24)
         }
+        // 번역 텍스트 전체화면
+        .fullScreenCover(isPresented: Binding(
+            get: { store.isTopExpanded },
+            set: { if !$0 { store.send(.collapseTopPanel) } }
+        )) {
+            ExpandedTextView(
+                text: store.translation.translatedText,
+                bgColor: kBlue, fgColor: .white,
+                isSpeaking: store.translation.isSpeaking,
+                onClose: { store.send(.collapseTopPanel) },
+                onSpeak: { store.send(.translationTextTapped) }
+            )
+            .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
+        }
+        // 인식 텍스트 전체화면
+        .fullScreenCover(isPresented: Binding(
+            get: { store.isBottomExpanded },
+            set: { if !$0 { store.send(.collapseBottomPanel) } }
+        )) {
+            ExpandedTextView(
+                text: store.speechRecognition.recognizedText,
+                bgColor: Color(.systemBackground), fgColor: .primary,
+                isSpeaking: false,
+                onClose: { store.send(.collapseBottomPanel) },
+                onSpeak: nil
+            )
+            .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
+        }
     }
 
     // MARK: - 번역 패널
@@ -52,6 +86,7 @@ public struct HomeView: View {
                 LanguagePickerOverlay(
                     selected: store.translation.targetLanguage,
                     bgColor: kBlue, rowFg: .white, accentColor: .white,
+                    bundle: appBundle,
                     onSelect: { store.send(.translation(.languageChanged($0))) },
                     onDismiss: { store.send(.hideTopPicker) }
                 )
@@ -63,23 +98,34 @@ public struct HomeView: View {
     }
 
     private var translationContent: some View {
-        // ScrollView + 컨트롤을 overlay로 분리 → ScrollView 제스처 간섭 없음
         ScrollView(.vertical, showsIndicators: false) {
             translationText
-                .padding(.horizontal, 28)
-                .padding(.top, 16)
-                .padding(.bottom, 104) // 하단 컨트롤 영역 확보
+                .padding(.horizontal, 24)
+                .padding(.top, 24)
+                .padding(.bottom, 104)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
         .onTapGesture { store.send(.translationTextTapped) }
         .overlay(alignment: .topTrailing) {
-            // TTS 재생 중 뱃지
-            if store.translation.isSpeaking {
-                Image(systemName: "speaker.wave.2.fill")
-                    .font(.system(size: 13))
-                    .foregroundStyle(.white.opacity(0.55))
-                    .padding(12)
+            HStack(spacing: 4) {
+                // TTS 재생 중 표시
+                if store.translation.isSpeaking {
+                    Image(systemName: "speaker.wave.2.fill")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.white.opacity(0.55))
+                        .padding(.trailing, 4)
+                }
+                // 확장 버튼 (텍스트 있을 때만)
+                if !store.translation.translatedText.isEmpty {
+                    Button { store.send(.expandTopPanel) } label: {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.65))
+                            .padding(12)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
         .overlay(alignment: .bottom) {
@@ -90,27 +136,23 @@ public struct HomeView: View {
     private var translationText: some View {
         Text(store.translation.translatedText.isEmpty
              ? "　" : store.translation.translatedText)
-            .font(.system(size: 30, weight: .regular))
+            .font(.system(size: 22, weight: .regular))
             .foregroundStyle(Color.white)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .lineSpacing(8)
+            .lineSpacing(6)
             .animation(.easeInOut(duration: 0.15), value: store.translation.translatedText)
     }
 
     private var translationBottomRow: some View {
         HStack(spacing: 0) {
-            circleBtn(icon: "arrow.left.arrow.right",
-                      fg: .white.opacity(0.85), bg: .white.opacity(0.18)) {
-                store.send(.swapLanguagesTapped)
-            }
             Spacer()
             panelLangButton(language: store.translation.targetLanguage, fg: .white) {
                 store.send(.showTopPicker)
             }
         }
-        .padding(.horizontal, 28)
-        .padding(.bottom, 28)
-        .padding(.top, 24)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 24)
+        .padding(.top, 20)
         .background(
             LinearGradient(colors: [kBlue.opacity(0), kBlue, kBlue],
                            startPoint: .top, endPoint: .bottom)
@@ -125,6 +167,7 @@ public struct HomeView: View {
                 LanguagePickerOverlay(
                     selected: store.speechRecognition.sourceLanguage,
                     bgColor: Color(.systemBackground), rowFg: .primary, accentColor: kBlue,
+                    bundle: appBundle,
                     onSelect: { store.send(.speechRecognition(.languageChanged($0))) },
                     onDismiss: { store.send(.hideBottomPicker) }
                 )
@@ -136,14 +179,25 @@ public struct HomeView: View {
     }
 
     private var recognitionContent: some View {
-        // 컨트롤을 overlay로 배치 → ScrollView가 버튼 탭 절대 흡수 안 함 ✓
         ScrollView(.vertical, showsIndicators: false) {
             recognitionText
-                .padding(.horizontal, 28)
-                .padding(.top, 16)
-                .padding(.bottom, 112) // 하단 컨트롤 영역 확보
+                .padding(.horizontal, 24)
+                .padding(.top, 24)
+                .padding(.bottom, 112)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .topTrailing) {
+            // 확장 버튼 (텍스트 있을 때만)
+            if !store.speechRecognition.recognizedText.isEmpty {
+                Button { store.send(.expandBottomPanel) } label: {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Color.secondary.opacity(0.7))
+                        .padding(12)
+                }
+                .buttonStyle(.plain)
+            }
+        }
         .overlay(alignment: .bottom) {
             recognitionBottomRow
         }
@@ -152,39 +206,50 @@ public struct HomeView: View {
     private var recognitionText: some View {
         Text(store.speechRecognition.recognizedText.isEmpty
              ? "　" : store.speechRecognition.recognizedText)
-            .font(.system(size: 30, weight: .regular))
+            .font(.system(size: 22, weight: .regular))
             .foregroundStyle(Color.primary)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .lineSpacing(8)
+            .lineSpacing(6)
             .animation(.easeInOut(duration: 0.15), value: store.speechRecognition.recognizedText)
     }
 
     private var recognitionBottomRow: some View {
-        HStack(spacing: 12) {
-            circleBtn(icon: "gearshape", fg: Color.secondary,
+        HStack(spacing: 10) {
+            // 설정
+            circleBtn(icon: "gearshape",
+                      fg: Color.secondary,
                       bg: Color(.secondarySystemFill)) {
                 store.send(.settingsTapped)
             }
+            // 대면 모드
             circleBtn(
                 icon: store.isFaceToFaceMode ? "person.2.fill" : "person.2",
                 fg: store.isFaceToFaceMode ? kBlue : Color.secondary,
                 bg: store.isFaceToFaceMode ? kBlue.opacity(0.12) : Color(.secondarySystemFill)
             ) { store.send(.toggleFaceToFaceTapped) }
 
+            // 언어 전환 화살표 (하단 그룹으로 이동)
+            circleBtn(icon: "arrow.left.arrow.right",
+                      fg: Color.secondary,
+                      bg: Color(.secondarySystemFill)) {
+                store.send(.swapLanguagesTapped)
+            }
+
             Spacer()
 
+            // 언어 선택
             panelLangButton(language: store.speechRecognition.sourceLanguage, fg: .primary) {
                 store.send(.showBottomPicker)
             }
 
-            // 녹음/중지 버튼 (고정 76×76 프레임 — 절대 레이아웃 안 밀림)
+            // 녹음/중지 버튼
             MicButton(isActive: store.isSessionActive, color: kBlue) {
                 store.send(store.isSessionActive ? .stopSessionTapped : .startSessionTapped)
             }
         }
-        .padding(.horizontal, 28)
+        .padding(.horizontal, 24)
         .padding(.bottom, 16)
-        .padding(.top, 24)
+        .padding(.top, 20)
         .safeAreaPadding(.bottom)
         .background(
             LinearGradient(
@@ -224,14 +289,13 @@ public struct HomeView: View {
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(fg.opacity(0.5))
             }
-            // 최소 너비 고정 → 언어 전환 시 레이아웃 흔들림 방지
             .frame(minWidth: 110, alignment: .trailing)
         }
         .buttonStyle(.plain)
     }
 }
 
-// MARK: - 녹음/중지 버튼 (독립 뷰 — 고정 프레임 + 펄스 애니메이션)
+// MARK: - 녹음/중지 버튼
 
 private struct MicButton: View {
     let isActive: Bool
@@ -243,14 +307,12 @@ private struct MicButton: View {
     var body: some View {
         Button(action: action) {
             ZStack {
-                // 펄스 링: 항상 레이아웃에 존재 (opacity로 표시/숨김) → 크기 변화 없음 ✓
                 Circle()
                     .stroke(Color.red.opacity(0.35), lineWidth: 2.5)
                     .frame(width: 76, height: 76)
                     .scaleEffect(pulsing ? 1.22 : 1.0)
                     .opacity(isActive ? 1 : 0)
 
-                // 메인 버튼
                 Image(systemName: isActive ? "stop.fill" : "mic.fill")
                     .font(.system(size: 26, weight: .semibold))
                     .foregroundStyle(Color.white)
@@ -262,7 +324,7 @@ private struct MicButton: View {
                     )
                     .animation(.easeInOut(duration: 0.15), value: isActive)
             }
-            .frame(width: 76, height: 76) // ← 고정 크기, 절대 밀리지 않음
+            .frame(width: 76, height: 76)
         }
         .buttonStyle(.plain)
         .onAppear { if isActive { startPulse() } }
@@ -277,8 +339,60 @@ private struct MicButton: View {
         }
     }
     private func stopPulse() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            pulsing = false
+        withAnimation(.easeInOut(duration: 0.2)) { pulsing = false }
+    }
+}
+
+// MARK: - 텍스트 전체화면 확장 뷰
+
+private struct ExpandedTextView: View {
+    let text: String
+    let bgColor: Color
+    let fgColor: Color
+    let isSpeaking: Bool
+    let onClose: () -> Void
+    let onSpeak: (() -> Void)?
+
+    var body: some View {
+        ZStack {
+            bgColor.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // 상단 버튼 바
+                HStack {
+                    Spacer()
+                    if let onSpeak {
+                        Button(action: onSpeak) {
+                            Image(systemName: isSpeaking
+                                  ? "speaker.wave.2.fill" : "speaker.wave.2")
+                                .font(.system(size: 20))
+                                .foregroundStyle(fgColor.opacity(0.7))
+                                .padding(8)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    Button(action: onClose) {
+                        Image(systemName: "xmark.circle.fill")
+                            .symbolRenderingMode(.hierarchical)
+                            .font(.system(size: 30))
+                            .foregroundStyle(fgColor.opacity(0.6))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+                // 텍스트 스크롤 영역
+                ScrollView(.vertical, showsIndicators: false) {
+                    Text(text.isEmpty ? "　" : text)
+                        .font(.system(size: 34, weight: .regular))
+                        .foregroundStyle(fgColor)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .lineSpacing(10)
+                        .padding(.horizontal, 28)
+                        .padding(.vertical, 28)
+                }
+            }
         }
     }
 }

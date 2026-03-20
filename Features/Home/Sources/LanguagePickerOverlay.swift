@@ -8,6 +8,7 @@ struct LanguagePickerOverlay: View {
     let bgColor: Color
     let rowFg: Color
     let accentColor: Color
+    let bundle: Bundle
     let onSelect: (SupportedLanguage) -> Void
     let onDismiss: () -> Void
 
@@ -21,7 +22,6 @@ struct LanguagePickerOverlay: View {
                 languageList
             }
         }
-        // 패널 전체를 꽉 채워야 전환 시 레이아웃이 밀리지 않음
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .center)))
     }
@@ -34,7 +34,7 @@ struct LanguagePickerOverlay: View {
                 HStack(spacing: 6) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 14, weight: .bold))
-                    Text(String(localized: "picker.back", bundle: .module))
+                    Text(String(localized: "picker.back", bundle: bundle))
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .foregroundStyle(rowFg.opacity(0.9))
@@ -70,11 +70,9 @@ struct LanguagePickerOverlay: View {
                 Text(lang.flag)
                     .font(.system(size: 28))
                 VStack(alignment: .leading, spacing: 2) {
-                    // 기기 언어 기준 이름 (예: 기기가 한국어면 "영어")
                     Text(lang.localizedName)
                         .font(.system(size: 17, weight: .regular))
                         .foregroundStyle(rowFg)
-                    // 해당 언어 자체 표기 (항상 고정)
                     Text(lang.displayName)
                         .font(.system(size: 12))
                         .foregroundStyle(rowFg.opacity(0.45))

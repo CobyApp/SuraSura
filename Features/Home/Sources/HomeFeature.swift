@@ -1,3 +1,4 @@
+import Foundation
 import ComposableArchitecture
 import SpeechRecognitionFeature
 import TranslationFeature
@@ -17,13 +18,19 @@ public struct HomeReducer {
         public var isFaceToFaceMode: Bool = false
         public var appColorScheme: AppColorScheme = .system
         public var isSettingsPresented: Bool = false
-        // 번역 즉시 TTS
         public var isAutoSpeakEnabled: Bool = true
-        // 커스텀 언어 피커 표시 여부
+        // 커스텀 언어 피커
         public var isTopPickerPresented: Bool = false
         public var isBottomPickerPresented: Bool = false
+        // 앱 내 언어 설정 ("" = 시스템 기본값)
+        public var appLanguage: String = ""
+        // 텍스트 전체화면 확장
+        public var isTopExpanded: Bool = false
+        public var isBottomExpanded: Bool = false
 
-        public init() {}
+        public init() {
+            self.appLanguage = UserDefaults.standard.string(forKey: "appLanguage") ?? ""
+        }
     }
 
     public enum Action {
@@ -37,13 +44,19 @@ public struct HomeReducer {
         case settingsTapped
         case settingsDismissed
         case autoSpeakToggled
+        case appLanguageChanged(String)
         // 커스텀 피커
         case showTopPicker
         case hideTopPicker
         case showBottomPicker
         case hideBottomPicker
-        // 텍스트 탭 → TTS
+        // 텍스트 TTS
         case translationTextTapped
+        // 텍스트 전체화면 확장
+        case expandTopPanel
+        case collapseTopPanel
+        case expandBottomPanel
+        case collapseBottomPanel
     }
 
     public init() {}
@@ -93,6 +106,11 @@ public struct HomeReducer {
                 state.isAutoSpeakEnabled.toggle()
                 return .none
 
+            case .appLanguageChanged(let lang):
+                state.appLanguage = lang
+                UserDefaults.standard.set(lang, forKey: "appLanguage")
+                return .none
+
             case .showTopPicker:
                 state.isTopPickerPresented = true
                 return .none
@@ -114,6 +132,22 @@ public struct HomeReducer {
                 return .send(state.translation.isSpeaking
                     ? .translation(.stopSpeaking)
                     : .translation(.speakRequested))
+
+            case .expandTopPanel:
+                state.isTopExpanded = true
+                return .none
+
+            case .collapseTopPanel:
+                state.isTopExpanded = false
+                return .none
+
+            case .expandBottomPanel:
+                state.isBottomExpanded = true
+                return .none
+
+            case .collapseBottomPanel:
+                state.isBottomExpanded = false
+                return .none
 
             // 번역 완료 → isAutoSpeakEnabled면 자동 TTS
             case .translation(.translationCompleted):

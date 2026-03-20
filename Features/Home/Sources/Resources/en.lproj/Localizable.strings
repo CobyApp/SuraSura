@@ -27,3 +27,7 @@
 
 /* Language picker */
 "picker.back" = "Back";
+
+/* App Language */
+"settings.language" = "App Language";
+"settings.language.system" = "System Default";

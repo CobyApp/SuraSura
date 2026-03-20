@@ -6,12 +6,17 @@ private let kBlue = Color(red: 0.11, green: 0.53, blue: 0.87)
 struct SettingsView: View {
     let store: StoreOf<HomeReducer>
 
+    private var bundle: Bundle {
+        Bundle.localizedModule(language: store.appLanguage)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             dragHandle
             headerRow
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
+                    languageCard
                     appearanceCard
                     translationCard
                     versionFooter
@@ -39,7 +44,7 @@ struct SettingsView: View {
     private var headerRow: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(String(localized: "settings.title", bundle: .module))
+                Text(String(localized: "settings.title", bundle: bundle))
                     .font(.system(size: 24, weight: .bold))
                 Text("すらすら")
                     .font(.system(size: 13))
@@ -58,13 +63,66 @@ struct SettingsView: View {
         .padding(.bottom, 20)
     }
 
+    // MARK: - 언어 카드
+
+    private var languageCard: some View {
+        settingsCard(
+            icon: "globe",
+            iconColor: Color.orange,
+            title: String(localized: "settings.language", bundle: bundle)
+        ) {
+            VStack(spacing: 0) {
+                ForEach(Array(languageOptions.enumerated()), id: \.offset) { idx, opt in
+                    languageRow(code: opt.code, flag: opt.flag, name: opt.name)
+                    if idx < languageOptions.count - 1 {
+                        Divider().padding(.leading, 44).opacity(0.4)
+                    }
+                }
+            }
+            .padding(.top, 4)
+        }
+    }
+
+    private var languageOptions: [(code: String, flag: String, name: String)] {
+        [
+            ("",        "⚙️", String(localized: "settings.language.system", bundle: bundle)),
+            ("ko",      "🇰🇷", "한국어"),
+            ("en",      "🇺🇸", "English"),
+            ("ja",      "🇯🇵", "日本語"),
+            ("zh-Hans", "🇨🇳", "中文 (简体)"),
+        ]
+    }
+
+    private func languageRow(code: String, flag: String, name: String) -> some View {
+        Button {
+            store.send(.appLanguageChanged(code))
+        } label: {
+            HStack(spacing: 12) {
+                Text(flag)
+                    .font(.system(size: 20))
+                    .frame(width: 28)
+                Text(name)
+                    .font(.system(size: 16))
+                    .foregroundStyle(Color.primary)
+                Spacer()
+                if store.appLanguage == code {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(kBlue)
+                }
+            }
+            .padding(.vertical, 10)
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - 외관 카드
 
     private var appearanceCard: some View {
         settingsCard(
             icon: "paintbrush.fill",
             iconColor: Color.purple,
-            title: String(localized: "settings.appearance", bundle: .module)
+            title: String(localized: "settings.appearance", bundle: bundle)
         ) {
             HStack(spacing: 8) {
                 ForEach(AppColorScheme.allCases, id: \.self) { scheme in
@@ -109,11 +167,11 @@ struct SettingsView: View {
         settingsCard(
             icon: "speaker.wave.2.fill",
             iconColor: kBlue,
-            title: String(localized: "settings.translation", bundle: .module)
+            title: String(localized: "settings.translation", bundle: bundle)
         ) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
-                    Text(String(localized: "settings.auto_speak", bundle: .module))
+                    Text(String(localized: "settings.auto_speak", bundle: bundle))
                         .font(.system(size: 16))
                         .foregroundStyle(Color.primary)
                     Spacer()
@@ -130,7 +188,7 @@ struct SettingsView: View {
                     .padding(.top, 14)
                     .padding(.bottom, 10)
 
-                Text(String(localized: "settings.auto_speak.footer", bundle: .module))
+                Text(String(localized: "settings.auto_speak.footer", bundle: bundle))
                     .font(.system(size: 12))
                     .foregroundStyle(Color.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -158,7 +216,6 @@ struct SettingsView: View {
         @ViewBuilder content: () -> Content
     ) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            // 섹션 헤더
             HStack(spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)

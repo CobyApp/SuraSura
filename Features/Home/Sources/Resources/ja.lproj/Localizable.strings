@@ -27,3 +27,7 @@
 
 /* 言語ピッカー */
 "picker.back" = "戻る";
+
+/* アプリ言語 */
+"settings.language" = "アプリ言語";
+"settings.language.system" = "システムデフォルト";

@@ -8,27 +8,28 @@ public struct HomeView: View {
         self.store = store
     }
 
+    // isSettingsPresented를 수동 Binding으로 처리 (TCA @ObservableState get-only 우회)
+    private var settingsBinding: Binding<Bool> {
+        Binding(
+            get: { store.isSettingsPresented },
+            set: { if !$0 { store.send(.settingsDismissed) } }
+        )
+    }
+
     public var body: some View {
         GeometryReader { geo in
             ZStack {
-                // 배경
                 backgroundGradient
-
                 VStack(spacing: 0) {
-                    // ── 상단 패널: 번역 결과 (대면모드시 뒤집힘) ──
                     translationPanel(geo: geo)
-
-                    // ── 중앙 컨트롤 바 ──
                     controlBar
-
-                    // ── 하단 패널: 음성 인식 ──
                     recognitionPanel(geo: geo)
                 }
             }
         }
         .ignoresSafeArea()
         .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
-        .sheet(isPresented: $store.isSettingsPresented) {
+        .sheet(isPresented: settingsBinding) {
             SettingsView(store: store)
                 .presentationDetents([.medium])
         }
@@ -48,7 +49,7 @@ public struct HomeView: View {
         .ignoresSafeArea()
     }
 
-    // MARK: - 상단 패널 (번역 결과)
+    // MARK: - 상단 패널 (번역 결과 — 대면모드 시 180° 플립)
 
     private func translationPanel(geo: GeometryProxy) -> some View {
         TranscriptionCardView(
@@ -73,10 +74,8 @@ public struct HomeView: View {
 
     private var controlBar: some View {
         VStack(spacing: 12) {
-            // 언어 선택 + 스왑
             LanguageSelectorView(store: store)
 
-            // 버튼 행: 설정 | 녹음 | 대면모드
             HStack(spacing: 0) {
                 // 설정 버튼
                 Button {
@@ -84,7 +83,7 @@ public struct HomeView: View {
                 } label: {
                     Image(systemName: "gearshape.fill")
                         .font(.system(size: 18))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.secondary)
                         .frame(width: 52, height: 52)
                         .background(.ultraThinMaterial, in: Circle())
                 }
@@ -92,7 +91,7 @@ public struct HomeView: View {
 
                 Spacer()
 
-                // 녹음 버튼 (중앙)
+                // 녹음 버튼
                 RecordButton(isActive: store.isSessionActive) {
                     if store.isSessionActive {
                         store.send(.stopSessionTapped)
@@ -107,11 +106,11 @@ public struct HomeView: View {
                 Button {
                     store.send(.toggleFaceToFaceTapped)
                 } label: {
-                    Image(systemName: store.isFaceToFaceMode
-                          ? "person.2.fill"
-                          : "person.2")
+                    Image(systemName: store.isFaceToFaceMode ? "person.2.fill" : "person.2")
                         .font(.system(size: 18))
-                        .foregroundStyle(store.isFaceToFaceMode ? .accent : .secondary)
+                        .foregroundStyle(
+                            store.isFaceToFaceMode ? Color.accentColor : Color.secondary
+                        )
                         .frame(width: 52, height: 52)
                         .background(
                             store.isFaceToFaceMode

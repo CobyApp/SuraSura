@@ -24,6 +24,7 @@ func appSettings() -> Settings {
             "SWIFT_VERSION": "5.9",
             "DEVELOPMENT_TEAM": .string(developmentTeamId),
             "CODE_SIGN_STYLE": "Automatic",
+            "DEFINES_MODULE": "NO",
         ],
         configurations: [
             .debug(name: "Debug", xcconfig: "Secrets.xcconfig"),

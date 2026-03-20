@@ -16,3 +16,11 @@
 "a11y.swap_languages" = "언어 전환";
 "a11y.record" = "녹음 시작";
 "a11y.stop" = "녹음 중지";
+
+/* 번역 설정 */
+"settings.translation" = "번역";
+"settings.auto_speak" = "번역 즉시 소리 재생";
+"settings.auto_speak.footer" = "번역이 완료되면 자동으로 상대방 언어로 소리를 재생합니다.";
+
+/* 언어 피커 */
+"picker.back" = "뒤로";

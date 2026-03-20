@@ -51,8 +51,8 @@ public struct TranslationReducer {
             case .translationCompleted(let text):
                 state.isTranslating = false
                 state.translatedText = text
-                // 번역 완료 즉시 TTS 자동 재생
-                return .send(.speakRequested)
+                // Auto-speak은 HomeReducer에서 isAutoSpeakEnabled 보고 제어
+                return .none
 
             case .speakRequested:
                 guard !state.translatedText.isEmpty else { return .none }

@@ -16,3 +16,11 @@
 "a11y.swap_languages" = "言語を交換";
 "a11y.record" = "録音開始";
 "a11y.stop" = "録音停止";
+
+/* 翻訳設定 */
+"settings.translation" = "翻訳";
+"settings.auto_speak" = "翻訳後に自動で読み上げ";
+"settings.auto_speak.footer" = "翻訳が完了すると、自動的に相手の言語で読み上げます。";
+
+/* 言語ピッカー */
+"picker.back" = "戻る";

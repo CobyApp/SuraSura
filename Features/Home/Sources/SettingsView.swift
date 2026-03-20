@@ -6,24 +6,29 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            appearanceSection
+            settingsList
                 .navigationTitle(String(localized: "settings.title", bundle: .module))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { doneButton }
         }
     }
 
-    // MARK: - 외관 섹션 (별도 프로퍼티로 분리 → 타입 체크 속도 향상)
+    private var settingsList: some View {
+        List {
+            appearanceSection
+            translationSection
+        }
+    }
+
+    // MARK: - 외관 섹션
 
     private var appearanceSection: some View {
-        List {
-            Section {
-                colorSchemeRow(.system)
-                colorSchemeRow(.light)
-                colorSchemeRow(.dark)
-            } header: {
-                Text(String(localized: "settings.appearance", bundle: .module))
-            }
+        Section {
+            colorSchemeRow(.system)
+            colorSchemeRow(.light)
+            colorSchemeRow(.dark)
+        } header: {
+            Text(String(localized: "settings.appearance", bundle: .module))
         }
     }
 
@@ -49,6 +54,33 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - 번역 섹션
+
+    private var translationSection: some View {
+        Section {
+            autoSpeakRow
+        } header: {
+            Text(String(localized: "settings.translation", bundle: .module))
+        } footer: {
+            Text(String(localized: "settings.auto_speak.footer", bundle: .module))
+        }
+    }
+
+    private var autoSpeakRow: some View {
+        HStack {
+            Label(
+                String(localized: "settings.auto_speak", bundle: .module),
+                systemImage: "speaker.wave.2.fill"
+            )
+            Spacer()
+            Toggle("", isOn: Binding(
+                get: { store.isAutoSpeakEnabled },
+                set: { _ in store.send(.autoSpeakToggled) }
+            ))
+            .labelsHidden()
+        }
+    }
+
     private var doneButton: some ToolbarContent {
         ToolbarItem(placement: .confirmationAction) {
             Button(String(localized: "settings.done", bundle: .module)) {
@@ -68,7 +100,6 @@ extension AppColorScheme {
         case .dark:   return String(localized: "settings.appearance.dark", bundle: .module)
         }
     }
-
     var icon: String {
         switch self {
         case .system: return "circle.lefthalf.filled"
@@ -76,7 +107,6 @@ extension AppColorScheme {
         case .dark:   return "moon.fill"
         }
     }
-
     public var swiftUIColorScheme: ColorScheme? {
         switch self {
         case .system: return nil

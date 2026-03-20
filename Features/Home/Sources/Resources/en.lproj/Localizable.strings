@@ -16,3 +16,11 @@
 "a11y.swap_languages" = "Swap Languages";
 "a11y.record" = "Start Recording";
 "a11y.stop" = "Stop Recording";
+
+/* Translation settings */
+"settings.translation" = "Translation";
+"settings.auto_speak" = "Auto-Speak After Translation";
+"settings.auto_speak.footer" = "Automatically plays the translated text aloud when translation is complete.";
+
+/* Language picker */
+"picker.back" = "Back";

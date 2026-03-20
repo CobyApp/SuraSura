@@ -85,15 +85,28 @@ public struct HomeView: View {
                     onSelect: { store.send(.translation(.languageChanged($0))) },
                     onDismiss: { store.send(.hideTopPicker) }
                 )
-                // 피커: 현재 대면 모드 상태를 즉시 반영 (애니메이션 없음)
-                .rotationEffect(store.isFaceToFaceMode ? .degrees(180) : .zero)
+                // rotationEffect 대신 scaleEffect 사용 → 레이아웃 높이에 영향 없음
+                // scaleEffect(x:-1, y:-1) = 180° 회전과 시각적으로 동일
+                .scaleEffect(x: store.isFaceToFaceMode ? -1 : 1,
+                             y: store.isFaceToFaceMode ? -1 : 1)
+                .animation(nil, value: store.isFaceToFaceMode)
             } else {
-                // 콘텐츠: 대면 모드 여부에 따라 0° 또는 180° 즉시 표시 (애니메이션 없음)
-                translationContent
-                    .rotationEffect(store.isFaceToFaceMode ? .degrees(180) : .zero)
+                // 대면 OFF: 정방향
+                if !store.isFaceToFaceMode {
+                    translationContent
+                        .transition(.opacity)
+                }
+                // 대면 ON: scaleEffect(x:-1,y:-1)로 뒤집기 — 레이아웃 불변
+                if store.isFaceToFaceMode {
+                    translationContent
+                        .scaleEffect(x: -1, y: -1)
+                        .transition(.opacity)
+                }
             }
         }
-        // 피커 슬라이드 전환만 애니메이션 적용 (대면 모드 전환은 애니메이션 없음)
+        // 대면 전환: opacity 크로스페이드 (회전 없음, 레이아웃 안 변함)
+        .animation(.easeInOut(duration: 0.22), value: store.isFaceToFaceMode)
+        // 피커 슬라이드 전환
         .animation(.easeInOut(duration: 0.22), value: store.isTopPickerPresented)
     }
 

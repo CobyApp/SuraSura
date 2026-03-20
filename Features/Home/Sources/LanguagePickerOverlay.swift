@@ -9,6 +9,7 @@ struct LanguagePickerOverlay: View {
     let rowFg: Color
     let accentColor: Color
     let bundle: Bundle
+    let appLanguage: String
     let onSelect: (SupportedLanguage) -> Void
     let onDismiss: () -> Void
 
@@ -70,7 +71,7 @@ struct LanguagePickerOverlay: View {
                 Text(lang.flag)
                     .font(.system(size: 28))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(lang.localizedName)
+                    Text(lang.localizedName(in: appLanguage))
                         .font(.system(size: 17, weight: .regular))
                         .foregroundStyle(rowFg)
                     Text(lang.displayName)

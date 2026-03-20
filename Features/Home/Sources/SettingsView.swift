@@ -140,7 +140,7 @@ struct SettingsView: View {
                 Image(systemName: scheme.icon)
                     .font(.system(size: 20, weight: .medium))
                     .foregroundStyle(isSelected ? kBlue : Color.secondary)
-                Text(scheme.shortLabel)
+                Text(scheme.shortLabel(bundle: bundle))
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(isSelected ? kBlue : Color.secondary)
                     .lineLimit(1)
@@ -246,18 +246,18 @@ struct SettingsView: View {
 // MARK: - AppColorScheme UI Extensions
 
 extension AppColorScheme {
-    var label: String {
+    func label(bundle: Bundle = .module) -> String {
         switch self {
-        case .system: return String(localized: "settings.appearance.system", bundle: .module)
-        case .light:  return String(localized: "settings.appearance.light", bundle: .module)
-        case .dark:   return String(localized: "settings.appearance.dark", bundle: .module)
+        case .system: return String(localized: "settings.appearance.system", bundle: bundle)
+        case .light:  return String(localized: "settings.appearance.light", bundle: bundle)
+        case .dark:   return String(localized: "settings.appearance.dark", bundle: bundle)
         }
     }
-    var shortLabel: String {
+    func shortLabel(bundle: Bundle = .module) -> String {
         switch self {
-        case .system: return String(localized: "settings.appearance.system.short", bundle: .module)
-        case .light:  return String(localized: "settings.appearance.light.short", bundle: .module)
-        case .dark:   return String(localized: "settings.appearance.dark.short", bundle: .module)
+        case .system: return String(localized: "settings.appearance.system.short", bundle: bundle)
+        case .light:  return String(localized: "settings.appearance.light.short", bundle: bundle)
+        case .dark:   return String(localized: "settings.appearance.dark.short", bundle: bundle)
         }
     }
     var icon: String {

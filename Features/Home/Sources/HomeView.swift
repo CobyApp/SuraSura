@@ -88,6 +88,7 @@ public struct HomeView: View {
                     selected: store.translation.targetLanguage,
                     bgColor: kBlue, rowFg: .white, accentColor: .white,
                     bundle: appBundle,
+                    appLanguage: store.appLanguage,
                     onSelect: { store.send(.translation(.languageChanged($0))) },
                     onDismiss: { store.send(.hideTopPicker) }
                 )
@@ -180,6 +181,7 @@ public struct HomeView: View {
                     selected: store.speechRecognition.sourceLanguage,
                     bgColor: Color(.systemBackground), rowFg: .primary, accentColor: kBlue,
                     bundle: appBundle,
+                    appLanguage: store.appLanguage,
                     onSelect: { store.send(.speechRecognition(.languageChanged($0))) },
                     onDismiss: { store.send(.hideBottomPicker) }
                 )
@@ -293,7 +295,7 @@ public struct HomeView: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Text(language.flag).font(.system(size: 24))
-                Text(language.localizedName)
+                Text(language.localizedName(in: store.appLanguage))
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(fg)
                     .lineLimit(1)

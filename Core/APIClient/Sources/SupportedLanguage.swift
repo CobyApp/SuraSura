@@ -211,9 +211,22 @@ extension SupportedLanguage {
         }
     }
 
-    /// 현재 기기 언어 기준으로 언어 이름 반환
-    /// 예) 기기가 한국어면 "영어", 기기가 영어면 "Korean"
+    /// 현재 기기 언어 기준으로 언어 이름 반환 (하위 호환)
     public var localizedName: String {
         Locale.current.localizedString(forIdentifier: localeIdentifier) ?? displayName
+    }
+
+    /// 앱 언어 설정 기준으로 언어 이름 반환
+    /// - Parameter appLanguage: store.appLanguage 값 (빈 문자열 = 기기 기본값)
+    public func localizedName(in appLanguage: String) -> String {
+        let locale: Locale
+        if appLanguage.isEmpty {
+            locale = Locale.current
+        } else {
+            // "zh-Hans" BCP-47 → Locale 생성 시 underscore 형식으로 변환
+            let identifier = appLanguage.replacingOccurrences(of: "-", with: "_")
+            locale = Locale(identifier: identifier)
+        }
+        return locale.localizedString(forIdentifier: localeIdentifier) ?? displayName
     }
 }

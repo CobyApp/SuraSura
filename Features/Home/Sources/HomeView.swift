@@ -6,7 +6,6 @@ private let kBlue = Color(red: 0.11, green: 0.53, blue: 0.87)
 
 public struct HomeView: View {
     @Bindable var store: StoreOf<HomeReducer>
-    @State private var faceFlash = false
 
     public init(store: StoreOf<HomeReducer>) { self.store = store }
 
@@ -88,32 +87,16 @@ public struct HomeView: View {
                 )
                 .scaleEffect(x: store.isFaceToFaceMode ? -1 : 1,
                              y: store.isFaceToFaceMode ? -1 : 1)
-                .animation(nil, value: store.isFaceToFaceMode)
+                .transaction(value: store.isFaceToFaceMode) { $0.animation = nil }
             } else {
-                // 단일 인스턴스 — scaleEffect로 뒤집기, 레이아웃 높이 불변
+                // 단일 인스턴스 + scaleEffect 즉각 전환 — 레이아웃 높이 불변
                 translationContent
                     .scaleEffect(x: store.isFaceToFaceMode ? -1 : 1,
                                  y: store.isFaceToFaceMode ? -1 : 1)
-                    .animation(nil, value: store.isFaceToFaceMode)
-            }
-            // 전환 시 짧은 플래시로 즉각 뒤집기를 부드럽게 마스킹
-            if faceFlash {
-                kBlue
-                    .allowsHitTesting(false)
-                    .transition(.opacity)
+                    .transaction(value: store.isFaceToFaceMode) { $0.animation = nil }
             }
         }
-        .animation(.easeInOut(duration: 0.15), value: faceFlash)
         .animation(.easeInOut(duration: 0.22), value: store.isTopPickerPresented)
-        .onChange(of: store.isFaceToFaceMode) { _, _ in
-            withAnimation(.easeInOut(duration: 0.1)) {
-                faceFlash = true
-            } completion: {
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    faceFlash = false
-                }
-            }
-        }
     }
 
     private var translationContent: some View {

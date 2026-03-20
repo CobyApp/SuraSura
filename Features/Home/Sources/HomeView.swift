@@ -93,13 +93,13 @@ public struct HomeView: View {
                 )
                 .scaleEffect(x: store.isFaceToFaceMode ? -1 : 1,
                              y: store.isFaceToFaceMode ? -1 : 1)
-                .transaction(value: store.isFaceToFaceMode) { $0.animation = nil }
+                .animation(.easeInOut(duration: 0.35), value: store.isFaceToFaceMode)
             } else {
-                // 단일 인스턴스 + scaleEffect 즉각 전환 — 레이아웃 높이 불변
+                // 단일 인스턴스 — 레이아웃 높이 불변, 부드러운 fold 전환
                 translationContent
                     .scaleEffect(x: store.isFaceToFaceMode ? -1 : 1,
                                  y: store.isFaceToFaceMode ? -1 : 1)
-                    .transaction(value: store.isFaceToFaceMode) { $0.animation = nil }
+                    .animation(.easeInOut(duration: 0.35), value: store.isFaceToFaceMode)
             }
         }
         .animation(.easeInOut(duration: 0.22), value: store.isTopPickerPresented)

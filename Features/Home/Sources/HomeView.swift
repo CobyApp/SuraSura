@@ -153,13 +153,13 @@ public struct HomeView: View {
 
     private var translationBottomRow: some View {
         HStack(spacing: 10) {
-            // 상단 녹음 버튼 — 대면 모드에서 상대방이 사용 (언어 반전 후 녹음)
-            MicButton(isActive: store.isSessionActive, color: Color.white.opacity(0.3)) {
-                store.send(store.isSessionActive ? .stopSessionTapped : .startTopSessionTapped)
-            }
             Spacer()
             panelLangButton(language: store.translation.targetLanguage, fg: .white) {
                 store.send(.showTopPicker)
+            }
+            // 상단 녹음 버튼 — 언어선택 오른쪽 (하단과 동일 레이아웃)
+            MicButton(isActive: store.isSessionActive, color: Color.white.opacity(0.3)) {
+                store.send(store.isSessionActive ? .stopSessionTapped : .startTopSessionTapped)
             }
         }
         .padding(.horizontal, 24)

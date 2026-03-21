@@ -21,7 +21,7 @@ public struct HomeView: View {
     }
 
     private func l(_ key: String) -> String {
-        String(localized: String.LocalizationValue(key), bundle: appBundle)
+        appBundle.localizedString(forKey: key, value: nil, table: nil)
     }
 
     public var body: some View {

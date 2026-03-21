@@ -7,13 +7,12 @@ on:
     tags:
       - 'v*'          # v1.0.0 같은 태그 → App Store 심사 제출
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # Node.js 24 사용
-
 jobs:
   deploy:
     runs-on: macos-latest
     timeout-minutes: 60
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # Node.js 24 사용
 
     steps:
       # ── 1. 소스 체크아웃 ─────────────────────────────────────────
@@ -40,6 +39,8 @@ jobs:
 
       # ── 5. Tuist 설치 (mise 직접 설치) ──────────────────────────
       - name: Install Tuist via mise
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           curl https://mise.run | sh
           echo "$HOME/.local/bin" >> $GITHUB_PATH

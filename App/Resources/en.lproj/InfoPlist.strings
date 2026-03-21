@@ -1,3 +1,6 @@
+/* App name */
+"CFBundleDisplayName" = "SuraSura";
+
 /* Microphone permission */
 "NSMicrophoneUsageDescription" = "A microphone is required for real-time translation.";
 

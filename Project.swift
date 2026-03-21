@@ -56,7 +56,7 @@ let project = Project(
         // MARK: App
         .target(
             name: "SuraSura",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .app,
             bundleId: "\(bundleIdPrefix)",
             deploymentTargets: deploymentTarget,
@@ -84,7 +84,7 @@ let project = Project(
         // MARK: Features
         .target(
             name: "HomeFeature",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .framework,
             bundleId: "\(bundleIdPrefix).feature.home",
             deploymentTargets: deploymentTarget,
@@ -102,7 +102,7 @@ let project = Project(
         ),
         .target(
             name: "SpeechRecognitionFeature",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .framework,
             bundleId: "\(bundleIdPrefix).feature.speech",
             deploymentTargets: deploymentTarget,
@@ -115,7 +115,7 @@ let project = Project(
         ),
         .target(
             name: "TranslationFeature",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .framework,
             bundleId: "\(bundleIdPrefix).feature.translation",
             deploymentTargets: deploymentTarget,
@@ -130,7 +130,7 @@ let project = Project(
         // MARK: Core
         .target(
             name: "APIClient",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .framework,
             bundleId: "\(bundleIdPrefix).core.apiclient",
             deploymentTargets: deploymentTarget,
@@ -143,7 +143,7 @@ let project = Project(
         ),
         .target(
             name: "DesignSystem",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .framework,
             bundleId: "\(bundleIdPrefix).core.designsystem",
             deploymentTargets: deploymentTarget,

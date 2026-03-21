@@ -38,12 +38,13 @@ jobs:
         run: |
           echo "GOOGLE_CLOUD_API_KEY=${{ secrets.GOOGLE_CLOUD_API_KEY }}" > Secrets.xcconfig
 
-      # ── 5. Tuist 설치 (mise 경유) ────────────────────────────────
-      - name: Install mise
-        uses: jdx/mise-action@v2
-
+      # ── 5. Tuist 설치 (mise 직접 설치) ──────────────────────────
       - name: Install Tuist via mise
-        run: mise use --global tuist && tuist version
+        run: |
+          curl https://mise.run | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          "$HOME/.local/bin/mise" use --global tuist
+          "$HOME/.local/bin/mise" exec -- tuist version
 
       # ── 6. Tuist 의존성 및 프로젝트 생성 ────────────────────────
       - name: Tuist fetch & generate

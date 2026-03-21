@@ -1,8 +1,16 @@
 import SwiftUI
 import ComposableArchitecture
 import APIClient
+import UIKit
 
 private let kBlue = Color(red: 0.11, green: 0.53, blue: 0.87)
+
+private func hideKeyboard() {
+    UIApplication.shared.sendAction(
+        #selector(UIResponder.resignFirstResponder),
+        to: nil, from: nil, for: nil
+    )
+}
 
 public struct HomeView: View {
     @Bindable var store: StoreOf<HomeReducer>
@@ -20,9 +28,7 @@ public struct HomeView: View {
 
     public var body: some View {
         ZStack {
-            // 배경: GeometryReader와 동일한 safe area 기준으로 절반 분할
-            // → kBlue는 Dynamic Island 위로 확장, 흰색은 홈 인디케이터 아래로 확장
-            // → 배경 경계선 = 콘텐츠 경계선 (safe area 기준 정확히 일치)
+            // 배경: 상단 파랑 / 하단 흰색
             VStack(spacing: 0) {
                 kBlue
                     .ignoresSafeArea(edges: .top)
@@ -32,7 +38,7 @@ public struct HomeView: View {
                     .frame(maxHeight: .infinity)
             }
 
-            // 콘텐츠 — GeometryReader로 패널 높이 1:1 픽셀 고정
+            // 콘텐츠
             GeometryReader { geo in
                 VStack(spacing: 0) {
                     translationPanel
@@ -42,6 +48,8 @@ public struct HomeView: View {
                 }
             }
         }
+        // 빈 곳 탭 → 키보드 닫기
+        .onTapGesture { hideKeyboard() }
         .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
         .sheet(isPresented: settingsBinding) {
             SettingsView(store: store)
@@ -49,7 +57,7 @@ public struct HomeView: View {
                 .presentationDragIndicator(.hidden)
                 .presentationCornerRadius(24)
         }
-        // 번역 텍스트 전체화면
+        // 번역 텍스트 전체화면 (대면 모드면 뒤집힘 유지)
         .fullScreenCover(isPresented: Binding(
             get: { store.isTopExpanded },
             set: { if !$0 { store.send(.collapseTopPanel) } }
@@ -58,20 +66,22 @@ public struct HomeView: View {
                 text: store.translation.translatedText,
                 bgColor: kBlue, fgColor: .white,
                 isSpeaking: store.translation.isSpeaking,
+                isFaceToFace: store.isFaceToFaceMode,
                 onClose: { store.send(.collapseTopPanel) },
                 onSpeak: { store.send(.translationTextTapped) }
             )
             .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
         }
-        // 인식 텍스트 전체화면
+        // 입력 텍스트 전체화면
         .fullScreenCover(isPresented: Binding(
             get: { store.isBottomExpanded },
             set: { if !$0 { store.send(.collapseBottomPanel) } }
         )) {
             ExpandedTextView(
-                text: store.speechRecognition.recognizedText,
+                text: store.textInput,
                 bgColor: Color(.systemBackground), fgColor: .primary,
                 isSpeaking: false,
+                isFaceToFace: false,
                 onClose: { store.send(.collapseBottomPanel) },
                 onSpeak: nil
             )
@@ -79,7 +89,7 @@ public struct HomeView: View {
         }
     }
 
-    // MARK: - 번역 패널
+    // MARK: - 번역 패널 (상단)
 
     private var translationPanel: some View {
         ZStack {
@@ -96,7 +106,6 @@ public struct HomeView: View {
                              y: store.isFaceToFaceMode ? -1 : 1)
                 .animation(.easeInOut(duration: 0.35), value: store.isFaceToFaceMode)
             } else {
-                // 단일 인스턴스 — 레이아웃 높이 불변, 부드러운 fold 전환
                 translationContent
                     .scaleEffect(x: store.isFaceToFaceMode ? -1 : 1,
                                  y: store.isFaceToFaceMode ? -1 : 1)
@@ -114,27 +123,18 @@ public struct HomeView: View {
                 .padding(.bottom, 130)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .contentShape(Rectangle())
-        .onTapGesture { store.send(.translationTextTapped) }
+        // 확장 버튼
         .overlay(alignment: .topTrailing) {
-            HStack(spacing: 4) {
-                // TTS 재생 중 표시
-                if store.translation.isSpeaking {
-                    Image(systemName: "speaker.wave.2.fill")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.white.opacity(0.55))
-                        .padding(.trailing, 4)
+            if !store.translation.translatedText.isEmpty {
+                Button { store.send(.expandTopPanel) } label: {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.75))
+                        .frame(width: 36, height: 36)
+                        .background(.white.opacity(0.15), in: Circle())
+                        .padding(16)
                 }
-                // 확장 버튼 (텍스트 있을 때만)
-                if !store.translation.translatedText.isEmpty {
-                    Button { store.send(.expandTopPanel) } label: {
-                        Image(systemName: "arrow.up.left.and.arrow.down.right")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.65))
-                            .padding(12)
-                    }
-                    .buttonStyle(.plain)
-                }
+                .buttonStyle(.plain)
             }
         }
         .overlay(alignment: .bottom) {
@@ -154,11 +154,26 @@ public struct HomeView: View {
 
     private var translationBottomRow: some View {
         HStack(spacing: 10) {
+            // 스피커 버튼 (TTS) — 번역 텍스트 있을 때만
+            if !store.translation.translatedText.isEmpty {
+                Button { store.send(.translationTextTapped) } label: {
+                    Image(systemName: store.translation.isSpeaking
+                          ? "speaker.wave.2.fill" : "speaker.wave.2")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.85))
+                        .frame(width: 40, height: 40)
+                        .background(.white.opacity(0.18), in: Circle())
+                }
+                .buttonStyle(.plain)
+                .transition(.scale.combined(with: .opacity))
+            }
+
             Spacer()
+
             panelLangButton(language: store.translation.targetLanguage, fg: .white) {
                 store.send(.showTopPicker)
             }
-            // 상단 녹음 버튼 — 언어선택 오른쪽 (하단과 동일 레이아웃)
+            // 상단 마이크
             MicButton(isActive: store.isSessionActive, color: Color.white.opacity(0.3)) {
                 store.send(store.isSessionActive ? .stopSessionTapped : .startTopSessionTapped)
             }
@@ -166,13 +181,14 @@ public struct HomeView: View {
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
         .padding(.top, 20)
+        .animation(.easeInOut(duration: 0.2), value: store.translation.translatedText.isEmpty)
         .background(
             LinearGradient(colors: [kBlue.opacity(0), kBlue, kBlue],
                            startPoint: .top, endPoint: .bottom)
         )
     }
 
-    // MARK: - 인식 패널
+    // MARK: - 인식/입력 패널 (하단)
 
     private var recognitionPanel: some View {
         ZStack {
@@ -193,38 +209,61 @@ public struct HomeView: View {
     }
 
     private var recognitionContent: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            recognitionText
-                .padding(.horizontal, 24)
-                .padding(.top, 24)
-                .padding(.bottom, 112)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay(alignment: .topTrailing) {
-            // 확장 버튼 (텍스트 있을 때만)
-            if !store.speechRecognition.recognizedText.isEmpty {
-                Button { store.send(.expandBottomPanel) } label: {
-                    Image(systemName: "arrow.up.left.and.arrow.down.right")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Color.secondary.opacity(0.7))
-                        .padding(12)
+        ZStack {
+            // 항상 TextEditor — 탭하면 포커스 & 키보드 올라옴
+            textInputArea
+
+            // 확장 버튼 (내용 있을 때만)
+            if !store.textInput.isEmpty {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button { store.send(.expandBottomPanel) } label: {
+                            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(Color.secondary.opacity(0.75))
+                                .frame(width: 36, height: 36)
+                                .background(Color(.secondarySystemFill), in: Circle())
+                                .padding(16)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    Spacer()
                 }
-                .buttonStyle(.plain)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay(alignment: .bottom) {
             recognitionBottomRow
         }
     }
 
-    private var recognitionText: some View {
-        Text(store.speechRecognition.recognizedText.isEmpty
-             ? "　" : store.speechRecognition.recognizedText)
-            .font(.system(size: 22, weight: .regular))
+    private var textInputArea: some View {
+        ZStack(alignment: .topLeading) {
+            // Placeholder
+            if store.textInput.isEmpty {
+                Text("텍스트를 입력하거나 마이크로 말하세요")
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundStyle(Color.secondary.opacity(0.45))
+                    .padding(.horizontal, 26)
+                    .padding(.top, 26)
+                    .allowsHitTesting(false)
+            }
+
+            TextEditor(text: Binding(
+                get: { store.textInput },
+                set: { store.send(.textInputChanged($0)) }
+            ))
+            .font(.system(size: 20, weight: .regular))
             .foregroundStyle(Color.primary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .lineSpacing(6)
-            .animation(.easeInOut(duration: 0.15), value: store.speechRecognition.recognizedText)
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .padding(.horizontal, 20)
+            .padding(.top, 18)
+            .padding(.bottom, 120)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var recognitionBottomRow: some View {
@@ -242,7 +281,7 @@ public struct HomeView: View {
                 bg: store.isFaceToFaceMode ? kBlue.opacity(0.12) : Color(.secondarySystemFill)
             ) { store.send(.toggleFaceToFaceTapped) }
 
-            // 언어 전환 화살표 (하단 그룹으로 이동)
+            // 언어 전환
             circleBtn(icon: "arrow.left.arrow.right",
                       fg: Color.secondary,
                       bg: Color(.secondarySystemFill)) {
@@ -256,15 +295,32 @@ public struct HomeView: View {
                 store.send(.showBottomPicker)
             }
 
-            // 녹음/중지 버튼
-            MicButton(isActive: store.isSessionActive, color: kBlue) {
-                store.send(store.isSessionActive ? .stopSessionTapped : .startSessionTapped)
+            // 텍스트 입력 중이면 번역 전송 버튼, 아니면 마이크
+            if !store.textInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                && !store.isSessionActive {
+                Button {
+                    hideKeyboard()
+                    store.send(.textInputSubmitted)
+                } label: {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 62))
+                        .foregroundStyle(kBlue)
+                        .frame(width: 76, height: 76)
+                }
+                .buttonStyle(.plain)
+                .transition(.scale.combined(with: .opacity))
+            } else {
+                MicButton(isActive: store.isSessionActive, color: kBlue) {
+                    store.send(store.isSessionActive ? .stopSessionTapped : .startSessionTapped)
+                }
+                .transition(.scale.combined(with: .opacity))
             }
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 16)
         .padding(.top, 20)
         .safeAreaPadding(.bottom)
+        .animation(.easeInOut(duration: 0.18), value: store.textInput.isEmpty)
         .background(
             LinearGradient(
                 colors: [Color(.systemBackground).opacity(0),
@@ -364,6 +420,7 @@ private struct ExpandedTextView: View {
     let bgColor: Color
     let fgColor: Color
     let isSpeaking: Bool
+    let isFaceToFace: Bool
     let onClose: () -> Void
     let onSpeak: (() -> Void)?
 
@@ -408,5 +465,7 @@ private struct ExpandedTextView: View {
                 }
             }
         }
+        // 대면 모드면 전체 뒤집기
+        .scaleEffect(x: isFaceToFace ? -1 : 1, y: isFaceToFace ? -1 : 1)
     }
 }

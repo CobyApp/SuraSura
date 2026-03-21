@@ -112,22 +112,6 @@ platform :ios do
     end
   end
 
-  # ── 메타데이터 & 스크린샷만 업로드 (바이너리 제외) ─────────────
-  lane :upload_metadata do
-    api_key = connect_api_key
-
-    upload_to_app_store(
-      api_key:              api_key,
-      skip_binary_upload:   true,
-      skip_screenshots:     false,
-      skip_metadata:        false,
-      overwrite_screenshots: true,
-      force:                true,
-      metadata_path:        "./fastlane/metadata",
-      screenshots_path:     "./fastlane/screenshots"
-    )
-  end
-
   # ── 에러 공통 처리 ──────────────────────────────────────────────
   error do |lane, exception|
     if ENV["SLACK_WEBHOOK_URL"]

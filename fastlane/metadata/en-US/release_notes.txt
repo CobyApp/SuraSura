@@ -1,4 +1,0 @@
-Initial release
-• Real-time voice recognition and translation
-• Face-to-Face conversation mode
-• Auto text-to-speech playback

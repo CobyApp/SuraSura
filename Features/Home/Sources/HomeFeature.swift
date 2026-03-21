@@ -27,6 +27,8 @@ public struct HomeReducer {
         // 텍스트 전체화면 확장
         public var isTopExpanded: Bool = false
         public var isBottomExpanded: Bool = false
+        // 하단 텍스트 입력 (음성 인식 결과도 여기에 반영)
+        public var textInput: String = ""
 
         public init() {
             self.appLanguage = UserDefaults.standard.string(forKey: "appLanguage") ?? ""
@@ -58,6 +60,9 @@ public struct HomeReducer {
         case collapseTopPanel
         case expandBottomPanel
         case collapseBottomPanel
+        // 텍스트 입력
+        case textInputChanged(String)
+        case textInputSubmitted
     }
 
     public init() {}
@@ -163,12 +168,22 @@ public struct HomeReducer {
                 state.isBottomExpanded = false
                 return .none
 
+            case .textInputChanged(let text):
+                state.textInput = text
+                return .none
+
+            case .textInputSubmitted:
+                let text = state.textInput.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !text.isEmpty else { return .none }
+                return .send(.translation(.translateRequested(text)))
+
             // 번역 완료 → isAutoSpeakEnabled면 자동 TTS
             case .translation(.translationCompleted):
                 guard state.isAutoSpeakEnabled else { return .none }
                 return .send(.translation(.speakRequested))
 
             case .speechRecognition(.recognizedTextUpdated(let text)):
+                state.textInput = text
                 return .send(.translation(.translateRequested(text)))
 
             case .speechRecognition, .translation:

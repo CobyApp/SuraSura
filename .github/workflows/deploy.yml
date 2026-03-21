@@ -6,17 +6,6 @@ on:
       - main          # main 푸시 → TestFlight 자동 배포
     tags:
       - 'v*'          # v1.0.0 같은 태그 → App Store 심사 제출
-  workflow_dispatch:
-    inputs:
-      lane:
-        description: '실행할 Fastlane lane'
-        required: true
-        default: 'upload_metadata'
-        type: choice
-        options:
-          - upload_metadata
-          - beta
-          - release
 
 jobs:
   deploy:
@@ -121,15 +110,7 @@ jobs:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
 
-      # ── 11. 수동 트리거 → 선택한 lane 실행 ─────────────────────
-      - name: Run selected lane (manual trigger)
-        if: github.event_name == 'workflow_dispatch'
-        run: bundle exec fastlane ${{ github.event.inputs.lane }}
-        env:
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-
-      # ── 12. 키체인 정리 ──────────────────────────────────────────
+      # ── 11. 키체인 정리 ──────────────────────────────────────────
       - name: Cleanup keychain
         if: always()
         run: security delete-keychain build.keychain || true

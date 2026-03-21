@@ -1,8 +1,6 @@
 import SwiftUI
 import ComposableArchitecture
 
-private let kBlue = Color(red: 0.11, green: 0.53, blue: 0.87)
-
 struct SettingsView: View {
     let store: StoreOf<HomeReducer>
 
@@ -108,10 +106,13 @@ struct SettingsView: View {
                 if store.appLanguage == code {
                     Image(systemName: "checkmark")
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(kBlue)
+                        .foregroundStyle(DesignTokens.accentBlue)
                 }
             }
             .padding(.vertical, 10)
+            // 행 전체가 터치 영역이 되도록 명시적으로 확장
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -139,10 +140,10 @@ struct SettingsView: View {
             VStack(spacing: 8) {
                 Image(systemName: scheme.icon)
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(isSelected ? kBlue : Color.secondary)
+                    .foregroundStyle(isSelected ? DesignTokens.accentBlue : Color.secondary)
                 Text(scheme.shortLabel(bundle: bundle))
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(isSelected ? kBlue : Color.secondary)
+                    .foregroundStyle(isSelected ? DesignTokens.accentBlue : Color.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -150,11 +151,14 @@ struct SettingsView: View {
             .padding(.vertical, 14)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? kBlue.opacity(0.1) : Color(.tertiarySystemFill))
+                    .fill(isSelected ? DesignTokens.accentBlue.opacity(0.1) : Color(.tertiarySystemFill))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(isSelected ? kBlue.opacity(0.45) : Color.clear, lineWidth: 1.5)
+                    .strokeBorder(
+                        isSelected ? DesignTokens.accentBlue.opacity(0.45) : Color.clear,
+                        lineWidth: 1.5
+                    )
             )
         }
         .buttonStyle(.plain)
@@ -166,7 +170,7 @@ struct SettingsView: View {
     private var translationCard: some View {
         settingsCard(
             icon: "speaker.wave.2.fill",
-            iconColor: kBlue,
+            iconColor: DesignTokens.accentBlue,
             title: String(localized: "settings.translation", bundle: bundle)
         ) {
             VStack(spacing: 0) {
@@ -180,7 +184,7 @@ struct SettingsView: View {
                         set: { _ in store.send(.autoSpeakToggled) }
                     ))
                     .labelsHidden()
-                    .tint(kBlue)
+                    .tint(DesignTokens.accentBlue)
                 }
                 .padding(.top, 2)
 

@@ -1,6 +1,7 @@
 /* 패널 */
 "panel.translation" = "번역";
 "panel.listening" = "인식 중";
+"panel.mic_hint" = "마이크를 눌러 말하세요";
 
 /* 설정 */
 "settings.title" = "설정";

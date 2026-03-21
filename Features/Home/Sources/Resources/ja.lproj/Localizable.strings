@@ -1,6 +1,7 @@
 /* パネル */
 "panel.translation" = "翻訳";
 "panel.listening" = "聞き取り中";
+"panel.mic_hint" = "マイクを押して話してください";
 
 /* 設定 */
 "settings.title" = "設定";

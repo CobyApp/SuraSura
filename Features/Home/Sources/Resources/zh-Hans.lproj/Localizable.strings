@@ -1,6 +1,7 @@
 /* 面板 */
 "panel.translation" = "翻译";
 "panel.listening" = "聆听中";
+"panel.mic_hint" = "请点击麦克风开始说话";
 
 /* 设置 */
 "settings.title" = "设置";

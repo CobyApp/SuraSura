@@ -87,6 +87,9 @@ struct LanguagePickerOverlay: View {
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 14)
+            // 행 전체가 터치 영역이 되도록 명시적으로 확장
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .background(lang == selected ? accentColor.opacity(0.08) : Color.clear)

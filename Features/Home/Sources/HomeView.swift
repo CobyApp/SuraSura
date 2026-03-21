@@ -2,7 +2,8 @@ import SwiftUI
 import ComposableArchitecture
 import APIClient
 
-private let kBlue = Color(red: 0.11, green: 0.53, blue: 0.87)
+// DesignTokens.accentBlue 를 짧게 참조하기 위한 파일 스코프 별칭
+private let kBlue = DesignTokens.accentBlue
 
 public struct HomeView: View {
     @Bindable var store: StoreOf<HomeReducer>
@@ -16,6 +17,10 @@ public struct HomeView: View {
 
     private var appBundle: Bundle {
         Bundle.localizedModule(language: store.appLanguage)
+    }
+
+    private func l(_ key: String) -> String {
+        String(localized: String.LocalizationValue(key), bundle: appBundle)
     }
 
     public var body: some View {
@@ -200,7 +205,7 @@ public struct HomeView: View {
             ZStack(alignment: .topLeading) {
                 // Placeholder
                 if store.speechRecognition.recognizedText.isEmpty {
-                    Text("마이크를 눌러 말하세요")
+                    Text(l("panel.mic_hint"))
                         .font(.system(size: 20, weight: .regular))
                         .foregroundStyle(Color.secondary.opacity(0.45))
                         .padding(.horizontal, 24)

@@ -1,6 +1,7 @@
 /* Panels */
 "panel.translation" = "Translation";
 "panel.listening" = "Listening";
+"panel.mic_hint" = "Tap the mic to speak";
 
 /* Settings */
 "settings.title" = "Settings";

@@ -7,6 +7,9 @@ on:
     tags:
       - 'v*'          # v1.0.0 같은 태그 → App Store 심사 제출
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # Node.js 24 사용
+
 jobs:
   deploy:
     runs-on: macos-latest
@@ -28,25 +31,25 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
-          bundler-cache: true   # Gemfile.lock 기반 캐시
+          bundler-cache: true
 
-      # ── 4. Tuist 설치 (mise 경유) ────────────────────────────────
+      # ── 4. Secrets.xcconfig 생성 (tuist generate 전에 필요) ──────
+      - name: Create Secrets.xcconfig
+        run: |
+          echo "GOOGLE_CLOUD_API_KEY=${{ secrets.GOOGLE_CLOUD_API_KEY }}" > Secrets.xcconfig
+
+      # ── 5. Tuist 설치 (mise 경유) ────────────────────────────────
       - name: Install mise
         uses: jdx/mise-action@v2
 
       - name: Install Tuist via mise
         run: mise use --global tuist && tuist version
 
-      # ── 5. Tuist 의존성 및 프로젝트 생성 ────────────────────────
+      # ── 6. Tuist 의존성 및 프로젝트 생성 ────────────────────────
       - name: Tuist fetch & generate
         run: |
           tuist install
           tuist generate --no-open
-
-      # ── 6. Secrets.xcconfig 생성 (API 키 주입) ──────────────────
-      - name: Create Secrets.xcconfig
-        run: |
-          echo "GOOGLE_CLOUD_API_KEY=${{ secrets.GOOGLE_CLOUD_API_KEY }}" > Secrets.xcconfig
 
       # ── 7. 임시 키체인 생성 + 배포 인증서 임포트 ────────────────
       - name: Setup code signing

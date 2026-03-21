@@ -79,10 +79,15 @@ jobs:
             -s -k "$KEYCHAIN_PASSWORD" build.keychain
 
           # 프로비저닝 프로파일 설치
+          # .mobileprovision은 바이너리 CMS 포맷 → security cms -D 로 plist 디코딩 후 UUID 추출
           echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > profile.mobileprovision
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          UUID=$(grep -a 'UUID' profile.mobileprovision \
-            | grep -o '[0-9a-f-]\{36\}' | head -1)
+          UUID=$(security cms -D -i profile.mobileprovision \
+            | grep -A1 '<key>UUID</key>' \
+            | tail -1 \
+            | sed 's/.*<string>\(.*\)<\/string>.*/\1/' \
+            | tr -d '[:space:]')
+          echo "Provisioning profile UUID: $UUID"
           cp profile.mobileprovision \
             ~/Library/MobileDevice/Provisioning\ Profiles/"$UUID".mobileprovision
 

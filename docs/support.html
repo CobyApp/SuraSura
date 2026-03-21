@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SuraSura – サポート / Support</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --indigo: #6366f1; --green: #34d399; --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --muted: #94a3b8; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.7; }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2rem; border-bottom: 1px solid #1e293b; }
+    .nav-logo { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, var(--indigo), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; margin-left: 1.5rem; font-size: .95rem; }
+    .container { max-width: 780px; margin: 0 auto; padding: 4rem 1.5rem; }
+    h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: .5rem; }
+    .subtitle { color: var(--muted); margin-bottom: 3rem; font-size: 1.1rem; }
+    .section { background: var(--card); border-radius: 20px; padding: 2rem; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,.06); }
+    .section h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.2rem; color: var(--indigo); }
+    .faq-item { margin-bottom: 1.4rem; }
+    .faq-item h3 { font-size: 1rem; font-weight: 600; margin-bottom: .4rem; }
+    .faq-item p { color: var(--muted); font-size: .95rem; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .contact-card { background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.2); border-radius: 14px; padding: 1.2rem; text-align: center; }
+    .contact-card .icon { font-size: 2rem; margin-bottom: .5rem; }
+    .contact-card h3 { font-size: .95rem; font-weight: 700; margin-bottom: .3rem; }
+    .contact-card a { color: var(--indigo); font-size: .9rem; text-decoration: none; }
+    footer { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: .85rem; border-top: 1px solid #1e293b; }
+    footer a { color: var(--muted); text-decoration: none; margin: 0 .5rem; }
+    @media(max-width:500px){ .contact-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">SuraSura</a>
+  <div class="nav-links">
+    <a href="index.html">ホーム</a>
+    <a href="privacy.html">プライバシー</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>サポート / Support</h1>
+  <p class="subtitle">SuraSuraに関するご質問・お問い合わせはこちら</p>
+
+  <div class="section">
+    <h2>よくある質問 (FAQ)</h2>
+
+    <div class="faq-item">
+      <h3>Q. 対応している言語はどれですか？</h3>
+      <p>日本語、英語、中国語（簡体・繁体）、韓国語、スペイン語、フランス語、ドイツ語、イタリア語、ポルトガル語、ロシア語、アラビア語など、Apple の Speech Recognition がサポートする主要言語に対応しています。</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>Q. オフラインでも使えますか？</h3>
+      <p>音声認識・翻訳にはインターネット接続が必要です。安定したWi-Fiまたはモバイルデータ通信環境でご利用ください。</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>Q. フェイス・トゥ・フェイスモードとは何ですか？</h3>
+      <p>2人が1台のiPhoneを挟んで向かい合い、それぞれ異なる言語で話せるモードです。上側のパネルは画面が反転して表示されます。</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>Q. マイクの使用許可が求められますが安全ですか？</h3>
+      <p>音声認識のためにマイクを使用します。録音データはAppleの音声認識APIに送信されますが、SuraSuraのサーバーには保存されません。</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>Q. What languages are supported?</h3>
+      <p>SuraSura supports major languages including Japanese, English, Chinese (Simplified & Traditional), Korean, Spanish, French, German, Italian, Portuguese, Russian, Arabic, and more.</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>Q. Does it work offline?</h3>
+      <p>An internet connection is required for voice recognition and translation. Please use the app with a stable Wi-Fi or cellular connection.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>お問い合わせ / Contact</h2>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <div class="icon">✉️</div>
+        <h3>メール / Email</h3>
+        <a href="mailto:support@surasura.app">support@surasura.app</a>
+      </div>
+      <div class="contact-card">
+        <div class="icon">🐛</div>
+        <h3>バグ報告 / Bug Report</h3>
+        <a href="https://github.com/CobyApp/SuraSura/issues" target="_blank">GitHub Issues</a>
+      </div>
+    </div>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:1.2rem;">通常 1〜2 営業日以内にご返答いたします。<br>We typically respond within 1–2 business days.</p>
+  </div>
+
+  <div class="section">
+    <h2>アプリのバージョン / App Version</h2>
+    <p style="color:var(--muted);">最新バージョン: <strong style="color:var(--text)">1.0.0</strong><br>
+    対応OS: iOS 16.0 以上 / iOS 16.0 or later<br>
+    Bundle ID: com.coby.surasura</p>
+  </div>
+</div>
+
+<footer>
+  <p>© 2025 SuraSura. All rights reserved.</p>
+  <p style="margin-top:.5rem">
+    <a href="index.html">ホーム</a>
+    <a href="privacy.html">プライバシーポリシー</a>
+  </p>
+</footer>
+
+</body>
+</html>

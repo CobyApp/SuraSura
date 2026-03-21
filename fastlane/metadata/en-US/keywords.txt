@@ -1,0 +1,1 @@
+translator,voice translation,real-time,interpreter,travel,language,multilingual,speech

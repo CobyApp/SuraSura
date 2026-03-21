@@ -1,5 +1,6 @@
 import SwiftUI
 import ComposableArchitecture
+import DesignSystem
 
 struct SettingsView: View {
     let store: StoreOf<HomeReducer>

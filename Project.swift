@@ -18,18 +18,25 @@ func frameworkSettings() -> Settings {
 }
 
 /// 앱 타겟용 settings (서명 + Secrets.xcconfig로 API Key 주입)
+/// - Debug: Automatic signing (개발용)
+/// - Release: Manual signing (CI/CD App Store 배포용)
 func appSettings() -> Settings {
     .settings(
         base: [
             "SWIFT_VERSION": "5.9",
             "DEVELOPMENT_TEAM": .string(developmentTeamId),
-            "CODE_SIGN_STYLE": "Automatic",
-            "CODE_SIGN_IDENTITY": "Apple Development",
             "DEFINES_MODULE": "NO",
         ],
         configurations: [
-            .debug(name: "Debug", xcconfig: "Secrets.xcconfig"),
-            .release(name: "Release", xcconfig: "Secrets.xcconfig"),
+            .debug(name: "Debug", settings: [
+                "CODE_SIGN_STYLE": "Automatic",
+                "CODE_SIGN_IDENTITY": "Apple Development",
+            ], xcconfig: "Secrets.xcconfig"),
+            .release(name: "Release", settings: [
+                "CODE_SIGN_STYLE": "Manual",
+                "CODE_SIGN_IDENTITY": "Apple Distribution",
+                "PROVISIONING_PROFILE_SPECIFIER": "SuraSura AppStore",
+            ], xcconfig: "Secrets.xcconfig"),
         ]
     )
 }

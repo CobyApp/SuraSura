@@ -1,0 +1,126 @@
+default_platform(:ios)
+
+# App Store Connect API 인증 (비밀번호 불필요)
+def connect_api_key
+  app_store_connect_api_key(
+    key_id:      ENV["APP_STORE_CONNECT_KEY_ID"],
+    issuer_id:   ENV["APP_STORE_CONNECT_ISSUER_ID"],
+    key_filepath: File.expand_path(
+      "~/.appstoreconnect/private_keys/AuthKey_#{ENV["APP_STORE_CONNECT_KEY_ID"]}.p8"
+    ),
+    duration:    1200,
+    in_house:    false
+  )
+end
+
+platform :ios do
+
+  # ── TestFlight 배포 (main 브랜치 푸시) ─────────────────────────
+  lane :beta do
+    api_key = connect_api_key
+
+    # 빌드 번호 자동 증가 (App Store Connect 최신값 +1)
+    increment_build_number(
+      build_number: latest_testflight_build_number(api_key: api_key) + 1,
+      xcodeproj: "SuraSura.xcodeproj"
+    )
+
+    # 아카이브 & IPA 생성
+    build_app(
+      scheme:                   "SuraSura",
+      workspace:                "SuraSura.xcworkspace",
+      configuration:            "Release",
+      export_method:            "app-store",
+      export_options:           {
+        provisioningProfiles: {
+          "com.coby.surasura" => "SuraSura AppStore"
+        }
+      },
+      clean:                    true,
+      output_directory:         "./build",
+      output_name:              "SuraSura.ipa"
+    )
+
+    # TestFlight 업로드
+    upload_to_testflight(
+      api_key:          api_key,
+      skip_waiting_for_build_processing: true
+    )
+
+    # Slack 알림 (선택 — SLACK_URL 시크릿 없으면 스킵)
+    if ENV["SLACK_WEBHOOK_URL"]
+      slack(
+        message:    "✅ TestFlight 배포 완료! 빌드: #{lane_context[SharedValues::BUILD_NUMBER]}",
+        webhook_url: ENV["SLACK_WEBHOOK_URL"],
+        success:    true
+      )
+    end
+  end
+
+  # ── App Store 심사 제출 (v* 태그 푸시) ─────────────────────────
+  lane :release do
+    api_key = connect_api_key
+
+    # 버전 번호를 태그에서 추출 (v1.2.3 → 1.2.3)
+    version = ENV["GITHUB_REF_NAME"]&.sub(/^v/, "")
+    if version
+      increment_version_number(
+        version_number: version,
+        xcodeproj: "SuraSura.xcodeproj"
+      )
+    end
+
+    increment_build_number(
+      build_number: latest_testflight_build_number(api_key: api_key) + 1,
+      xcodeproj: "SuraSura.xcodeproj"
+    )
+
+    build_app(
+      scheme:        "SuraSura",
+      workspace:     "SuraSura.xcworkspace",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.coby.surasura" => "SuraSura AppStore"
+        }
+      },
+      clean:             true,
+      output_directory:  "./build",
+      output_name:       "SuraSura.ipa"
+    )
+
+    # App Store Connect 심사 제출
+    upload_to_app_store(
+      api_key:                        api_key,
+      submit_for_review:              true,
+      automatic_release:              false,   # 심사 통과 후 수동 릴리즈
+      force:                          true,
+      skip_screenshots:               true,
+      skip_metadata:                  true,
+      submission_information: {
+        add_id_info_uses_idfa: false
+      }
+    )
+
+    if ENV["SLACK_WEBHOOK_URL"]
+      slack(
+        message:     "🚀 App Store 심사 제출 완료! v#{version}",
+        webhook_url:  ENV["SLACK_WEBHOOK_URL"],
+        success:     true
+      )
+    end
+  end
+
+  # ── 에러 공통 처리 ──────────────────────────────────────────────
+  error do |lane, exception|
+    if ENV["SLACK_WEBHOOK_URL"]
+      slack(
+        message:     "❌ [#{lane}] 배포 실패: #{exception.message}",
+        webhook_url:  ENV["SLACK_WEBHOOK_URL"],
+        success:     false
+      )
+    end
+  end
+
+end

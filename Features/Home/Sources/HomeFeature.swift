@@ -27,6 +27,8 @@ public struct HomeReducer {
         // 텍스트 전체화면 확장
         public var isTopExpanded: Bool = false
         public var isBottomExpanded: Bool = false
+        // 상단 마이크로 세션 시작 시 언어가 임시 스왑된 상태인지 추적
+        public var swappedForTopSession: Bool = false
 
         public init() {
             self.appLanguage = UserDefaults.standard.string(forKey: "appLanguage") ?? ""
@@ -75,11 +77,22 @@ public struct HomeReducer {
 
             case .stopSessionTapped:
                 state.isSessionActive = false
+                if state.swappedForTopSession {
+                    state.swappedForTopSession = false
+                    let src = state.speechRecognition.sourceLanguage
+                    let tgt = state.translation.targetLanguage
+                    return .run { send in
+                        await send(.speechRecognition(.stopListening))
+                        await send(.speechRecognition(.languageChanged(tgt)))
+                        await send(.translation(.languageChanged(src)))
+                    }
+                }
                 return .send(.speechRecognition(.stopListening))
 
             case .startTopSessionTapped:
                 guard !state.isSessionActive else { return .none }
                 state.isSessionActive = true
+                state.swappedForTopSession = true
                 let src = state.speechRecognition.sourceLanguage
                 let tgt = state.translation.targetLanguage
                 return .run { send in

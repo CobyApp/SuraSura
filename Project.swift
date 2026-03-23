@@ -52,7 +52,7 @@ let project = Project(
     settings: .settings(
         base: [
             "MARKETING_VERSION": "1.0",
-            "CURRENT_PROJECT_VERSION": "1",
+            "CURRENT_PROJECT_VERSION": "7",
         ],
         configurations: [
             .debug(name: "Debug", settings: [:], xcconfig: nil),

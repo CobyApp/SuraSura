@@ -75,15 +75,17 @@ public struct HomeReducer {
             switch action {
             case .startSessionTapped:
                 state.isSessionActive = true
-                state.isTopMicActive = false
-                // 상단 마이크로 쓴 뒤였다면 언어 원복 (여기서 한 번에 처리)
+                // 상단 마이크로 쓴 뒤였다면 언어 원복 + 텍스트 초기화
                 if state.swappedForTopSession {
                     let src = state.speechRecognition.sourceLanguage
                     let tgt = state.translation.targetLanguage
                     state.speechRecognition.sourceLanguage = tgt
                     state.translation.targetLanguage = src
                     state.swappedForTopSession = false
+                    state.speechRecognition.recognizedText = ""
+                    state.translation.translatedText = ""
                 }
+                state.isTopMicActive = false
                 return .send(.speechRecognition(.startListening))
 
             case .stopSessionTapped:
@@ -99,6 +101,9 @@ public struct HomeReducer {
                 let tgt = state.translation.targetLanguage
                 state.speechRecognition.sourceLanguage = tgt
                 state.translation.targetLanguage = src
+                // 이전 세션 텍스트 초기화 → 상단 마이크 시작 시 기존 내용이 위아래로 이동하는 현상 방지
+                state.speechRecognition.recognizedText = ""
+                state.translation.translatedText = ""
                 state.isSessionActive = true
                 state.swappedForTopSession = true
                 state.isTopMicActive = true

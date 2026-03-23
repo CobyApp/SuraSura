@@ -53,17 +53,23 @@ public struct HomeView: View {
                 .presentationDragIndicator(.hidden)
                 .presentationCornerRadius(24)
         }
-        // 번역 텍스트 전체화면 (대면 모드면 뒤집힘 유지)
+        // 번역 텍스트 전체화면
         .fullScreenCover(isPresented: Binding(
             get: { store.isTopExpanded },
             set: { if !$0 { store.send(.collapseTopPanel) } }
         )) {
+            let topText = store.activeMic == .top
+                ? store.speechRecognition.recognizedText
+                : store.translation.translatedText
+            let topLang = store.activeMic == .top ? store.topLanguage : store.topLanguage
             ExpandedTextView(
-                text: store.activeMic == .top
-                    ? store.speechRecognition.recognizedText
-                    : store.translation.translatedText,
+                text: topText,
+                language: topLang,
                 bgColor: kBlue, fgColor: .white,
                 isFaceToFace: store.isFaceToFaceMode,
+                isSpeaking: store.translation.isSpeaking,
+                onSpeak: { store.send(.speakExpanded(topText, topLang)) },
+                onStopSpeak: { store.send(.stopSpeakingExpanded) },
                 onClose: { store.send(.collapseTopPanel) }
             )
             .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
@@ -73,12 +79,18 @@ public struct HomeView: View {
             get: { store.isBottomExpanded },
             set: { if !$0 { store.send(.collapseBottomPanel) } }
         )) {
+            let bottomText = store.activeMic == .top
+                ? store.translation.translatedText
+                : store.speechRecognition.recognizedText
+            let bottomLang = store.activeMic == .top ? store.bottomLanguage : store.bottomLanguage
             ExpandedTextView(
-                text: store.activeMic == .top
-                    ? store.translation.translatedText
-                    : store.speechRecognition.recognizedText,
+                text: bottomText,
+                language: bottomLang,
                 bgColor: Color(.systemBackground), fgColor: .primary,
                 isFaceToFace: false,
+                isSpeaking: store.translation.isSpeaking,
+                onSpeak: { store.send(.speakExpanded(bottomText, bottomLang)) },
+                onStopSpeak: { store.send(.stopSpeakingExpanded) },
                 onClose: { store.send(.collapseBottomPanel) }
             )
             .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
@@ -138,10 +150,10 @@ public struct HomeView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay(alignment: .topTrailing) {
-            expandButton(isEmpty: displayText.isEmpty, fg: .white) {
-                store.send(.expandTopPanel)
-            }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            guard !displayText.isEmpty else { return }
+            store.send(.expandTopPanel)
         }
         .overlay(alignment: .bottom) {
             translationBottomRow
@@ -193,10 +205,10 @@ public struct HomeView: View {
             ? store.translation.translatedText
             : store.speechRecognition.recognizedText
         return recognitionText
-            .overlay(alignment: .topTrailing) {
-                expandButton(isEmpty: displayText.isEmpty, fg: Color.secondary) {
-                    store.send(.expandBottomPanel)
-                }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                guard !displayText.isEmpty else { return }
+                store.send(.expandBottomPanel)
             }
             .overlay(alignment: .bottom) {
                 recognitionBottomRow(displayText: displayText)
@@ -278,20 +290,6 @@ public struct HomeView: View {
     }
 
     // MARK: - 공용 헬퍼
-
-    /// 우상단 확장 버튼 (좌우 반전 아이콘)
-    private func expandButton(isEmpty: Bool, fg: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: "arrow.up.right.and.arrow.down.left")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(fg.opacity(isEmpty ? 0.25 : 0.6))
-                .frame(width: 30, height: 30)
-                .background(fg.opacity(isEmpty ? 0.05 : 0.1), in: Circle())
-        }
-        .buttonStyle(.plain)
-        .disabled(isEmpty)
-        .padding(12)
-    }
 
     private func circleBtn(
         icon: String, fg: Color, bg: Color, action: @escaping () -> Void
@@ -378,9 +376,13 @@ private struct MicButton: View {
 
 private struct ExpandedTextView: View {
     let text: String
+    let language: SupportedLanguage
     let bgColor: Color
     let fgColor: Color
     let isFaceToFace: Bool
+    let isSpeaking: Bool
+    let onSpeak: () -> Void
+    let onStopSpeak: () -> Void
     let onClose: () -> Void
 
     var body: some View {
@@ -388,9 +390,21 @@ private struct ExpandedTextView: View {
             bgColor.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // 닫기 버튼
+                // 상단 버튼 행
                 HStack {
+                    // TTS 버튼
+                    Button(action: isSpeaking ? onStopSpeak : onSpeak) {
+                        Image(systemName: isSpeaking ? "speaker.wave.3.fill" : "speaker.wave.2")
+                            .symbolRenderingMode(.hierarchical)
+                            .font(.system(size: 24))
+                            .foregroundStyle(fgColor.opacity(0.7))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(text.isEmpty)
+
                     Spacer()
+
+                    // 닫기 버튼
                     Button(action: onClose) {
                         Image(systemName: "xmark.circle.fill")
                             .symbolRenderingMode(.hierarchical)
@@ -399,8 +413,8 @@ private struct ExpandedTextView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
 
                 // 텍스트 스크롤 영역
                 ScrollView(.vertical, showsIndicators: false) {

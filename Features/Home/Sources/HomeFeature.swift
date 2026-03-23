@@ -68,7 +68,12 @@ public struct HomeReducer {
         case collapseTopPanel
         case expandBottomPanel
         case collapseBottomPanel
+        // 전체화면 TTS
+        case speakExpanded(String, SupportedLanguage)
+        case stopSpeakingExpanded
     }
+
+    @Dependency(\.ttsClient) var ttsClient
 
     public init() {}
 
@@ -204,6 +209,18 @@ public struct HomeReducer {
 
             case .collapseBottomPanel:
                 state.isBottomExpanded = false
+                return .none
+
+            case .speakExpanded(let text, let language):
+                state.translation.isSpeaking = true
+                return .run { send in
+                    do { try await ttsClient.speak(text, language) } catch {}
+                    await send(.translation(.speakingFinished))
+                }
+
+            case .stopSpeakingExpanded:
+                state.translation.isSpeaking = false
+                ttsClient.stop()
                 return .none
 
             // MARK: - 자동 TTS / 번역 연결

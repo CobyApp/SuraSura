@@ -29,6 +29,8 @@ public struct HomeReducer {
         public var isBottomExpanded: Bool = false
         // 상단 마이크로 세션 시작 시 언어가 임시 스왑된 상태인지 추적
         public var swappedForTopSession: Bool = false
+        // 상단 마이크 활성 중: 상단=인식텍스트, 하단=번역결과 로 표시
+        public var isTopMicActive: Bool = false
 
         public init() {
             self.appLanguage = UserDefaults.standard.string(forKey: "appLanguage") ?? ""
@@ -79,6 +81,7 @@ public struct HomeReducer {
                 state.isSessionActive = false
                 if state.swappedForTopSession {
                     state.swappedForTopSession = false
+                    state.isTopMicActive = false
                     let src = state.speechRecognition.sourceLanguage
                     let tgt = state.translation.targetLanguage
                     return .run { send in
@@ -93,6 +96,7 @@ public struct HomeReducer {
                 guard !state.isSessionActive else { return .none }
                 state.isSessionActive = true
                 state.swappedForTopSession = true
+                state.isTopMicActive = true
                 let src = state.speechRecognition.sourceLanguage
                 let tgt = state.translation.targetLanguage
                 return .run { send in

@@ -59,7 +59,9 @@ public struct HomeView: View {
             set: { if !$0 { store.send(.collapseTopPanel) } }
         )) {
             ExpandedTextView(
-                text: store.translation.translatedText,
+                text: store.isTopMicActive
+                    ? store.speechRecognition.recognizedText
+                    : store.translation.translatedText,
                 bgColor: kBlue, fgColor: .white,
                 isFaceToFace: store.isFaceToFaceMode,
                 onClose: { store.send(.collapseTopPanel) }
@@ -72,7 +74,9 @@ public struct HomeView: View {
             set: { if !$0 { store.send(.collapseBottomPanel) } }
         )) {
             ExpandedTextView(
-                text: store.speechRecognition.recognizedText,
+                text: store.isTopMicActive
+                    ? store.translation.translatedText
+                    : store.speechRecognition.recognizedText,
                 bgColor: Color(.systemBackground), fgColor: .primary,
                 isFaceToFace: false,
                 onClose: { store.send(.collapseBottomPanel) }
@@ -129,13 +133,16 @@ public struct HomeView: View {
     }
 
     private var translationText: some View {
-        Text(store.translation.translatedText.isEmpty
-             ? "　" : store.translation.translatedText)
+        // 상단 마이크 활성 시: 상단에 인식 텍스트(말한 내용) 표시
+        let displayText = store.isTopMicActive
+            ? store.speechRecognition.recognizedText
+            : store.translation.translatedText
+        return Text(displayText.isEmpty ? "　" : displayText)
             .font(.system(size: 22, weight: .regular))
             .foregroundStyle(Color.white)
             .frame(maxWidth: .infinity, alignment: .leading)
             .lineSpacing(6)
-            .animation(.easeInOut(duration: 0.15), value: store.translation.translatedText)
+            .animation(.easeInOut(duration: 0.15), value: displayText)
     }
 
     private var translationBottomRow: some View {
@@ -202,10 +209,14 @@ public struct HomeView: View {
     }
 
     private var recognitionText: some View {
-        ScrollView(.vertical, showsIndicators: false) {
+        // 상단 마이크 활성 시: 하단에 번역 결과 표시
+        let displayText = store.isTopMicActive
+            ? store.translation.translatedText
+            : store.speechRecognition.recognizedText
+        return ScrollView(.vertical, showsIndicators: false) {
             ZStack(alignment: .topLeading) {
                 // Placeholder
-                if store.speechRecognition.recognizedText.isEmpty {
+                if displayText.isEmpty {
                     Text(l("panel.mic_hint"))
                         .font(.system(size: 20, weight: .regular))
                         .foregroundStyle(Color.secondary.opacity(0.45))
@@ -213,8 +224,7 @@ public struct HomeView: View {
                         .padding(.top, 24)
                 }
 
-                Text(store.speechRecognition.recognizedText.isEmpty
-                     ? "　" : store.speechRecognition.recognizedText)
+                Text(displayText.isEmpty ? "　" : displayText)
                     .font(.system(size: 20, weight: .regular))
                     .foregroundStyle(Color.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -222,7 +232,7 @@ public struct HomeView: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 24)
                     .padding(.bottom, 120)
-                    .animation(.easeInOut(duration: 0.12), value: store.speechRecognition.recognizedText)
+                    .animation(.easeInOut(duration: 0.12), value: displayText)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

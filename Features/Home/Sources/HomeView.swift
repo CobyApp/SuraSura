@@ -138,32 +138,22 @@ public struct HomeView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .topTrailing) {
+            expandButton(isEmpty: displayText.isEmpty, fg: .white) {
+                store.send(.expandTopPanel)
+            }
+        }
         .overlay(alignment: .bottom) {
-            translationBottomRow(displayText: displayText)
+            translationBottomRow
         }
     }
 
-    private func translationBottomRow(displayText: String) -> some View {
+    private var translationBottomRow: some View {
         HStack(spacing: 10) {
-            // 확장 버튼
-            Button {
-                guard !displayText.isEmpty else { return }
-                store.send(.expandTopPanel)
-            } label: {
-                Image(systemName: "arrow.up.left.and.arrow.down.right")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color.white.opacity(displayText.isEmpty ? 0.25 : 0.75))
-                    .frame(width: 36, height: 36)
-                    .background(Color.white.opacity(0.15), in: Circle())
-            }
-            .buttonStyle(.plain)
-
             Spacer()
-
             panelLangButton(language: store.topLanguage, fg: .white) {
                 store.send(.showTopPicker)
             }
-            // 상단 마이크
             MicButton(isActive: store.isSessionActive && store.activeMic == .top,
                       color: Color.white.opacity(0.3)) {
                 store.send(store.isSessionActive ? .stopSessionTapped : .startTopSessionTapped)
@@ -203,6 +193,11 @@ public struct HomeView: View {
             ? store.translation.translatedText
             : store.speechRecognition.recognizedText
         return recognitionText
+            .overlay(alignment: .topTrailing) {
+                expandButton(isEmpty: displayText.isEmpty, fg: Color.secondary) {
+                    store.send(.expandBottomPanel)
+                }
+            }
             .overlay(alignment: .bottom) {
                 recognitionBottomRow(displayText: displayText)
             }
@@ -257,16 +252,6 @@ public struct HomeView: View {
                 store.send(.swapLanguagesTapped)
             }
 
-            // 확장 버튼
-            circleBtn(
-                icon: "arrow.up.left.and.arrow.down.right",
-                fg: displayText.isEmpty ? Color.secondary.opacity(0.3) : Color.secondary,
-                bg: Color(.secondarySystemFill)
-            ) {
-                guard !displayText.isEmpty else { return }
-                store.send(.expandBottomPanel)
-            }
-
             Spacer()
 
             panelLangButton(language: store.bottomLanguage, fg: .primary) {
@@ -293,6 +278,20 @@ public struct HomeView: View {
     }
 
     // MARK: - 공용 헬퍼
+
+    /// 우상단 확장 버튼 (좌우 반전 아이콘)
+    private func expandButton(isEmpty: Bool, fg: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: "arrow.up.right.and.arrow.down.left")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(fg.opacity(isEmpty ? 0.25 : 0.6))
+                .frame(width: 30, height: 30)
+                .background(fg.opacity(isEmpty ? 0.05 : 0.1), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(isEmpty)
+        .padding(12)
+    }
 
     private func circleBtn(
         icon: String, fg: Color, bg: Color, action: @escaping () -> Void

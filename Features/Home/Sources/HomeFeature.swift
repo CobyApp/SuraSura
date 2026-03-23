@@ -75,6 +75,7 @@ public struct HomeReducer {
             switch action {
             case .startSessionTapped:
                 state.isSessionActive = true
+                state.isTopMicActive = false  // 하단 마이크 시작 시 상단 모드 리셋
                 return .send(.speechRecognition(.startListening))
 
             case .stopSessionTapped:
@@ -86,7 +87,8 @@ public struct HomeReducer {
                     state.speechRecognition.sourceLanguage = tgt
                     state.translation.targetLanguage = src
                     state.swappedForTopSession = false
-                    state.isTopMicActive = false
+                    // isTopMicActive는 유지 → 텍스트 위치 그대로 보존
+                    // 하단 마이크 세션 시작 시에 false로 리셋
                 }
                 return .send(.speechRecognition(.stopListening))
 

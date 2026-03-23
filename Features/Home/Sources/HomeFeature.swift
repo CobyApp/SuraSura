@@ -112,7 +112,8 @@ public struct HomeReducer {
 
             case .topLanguageChanged(let lang):
                 state.topLanguage = lang
-                // 현재 세션에 반영
+                state.speechRecognition.recognizedText = ""
+                state.translation.translatedText = ""
                 if state.activeMic == .bottom {
                     state.translation.targetLanguage = lang
                 } else {
@@ -122,6 +123,8 @@ public struct HomeReducer {
 
             case .bottomLanguageChanged(let lang):
                 state.bottomLanguage = lang
+                state.speechRecognition.recognizedText = ""
+                state.translation.translatedText = ""
                 if state.activeMic == .bottom {
                     state.speechRecognition.sourceLanguage = lang
                 } else {
@@ -133,7 +136,8 @@ public struct HomeReducer {
                 let tmp = state.topLanguage
                 state.topLanguage = state.bottomLanguage
                 state.bottomLanguage = tmp
-                // speech/translation 언어도 동기화
+                state.speechRecognition.recognizedText = ""
+                state.translation.translatedText = ""
                 if state.activeMic == .bottom {
                     state.speechRecognition.sourceLanguage = state.bottomLanguage
                     state.translation.targetLanguage = state.topLanguage

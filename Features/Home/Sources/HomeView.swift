@@ -193,25 +193,10 @@ public struct HomeView: View {
     }
 
     private var recognitionContent: some View {
-        ZStack {
-            // 음성 인식 결과 텍스트
-            recognitionText
-
-            // 길게 누르면 전체화면 확장
-            Color.clear
-                .contentShape(Rectangle())
-                .simultaneousGesture(
-                    LongPressGesture(minimumDuration: 0.5)
-                        .onEnded { _ in
-                            guard !store.speechRecognition.recognizedText.isEmpty else { return }
-                            store.send(.expandBottomPanel)
-                        }
-                )
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay(alignment: .bottom) {
-            recognitionBottomRow
-        }
+        recognitionText
+            .overlay(alignment: .bottom) {
+                recognitionBottomRow
+            }
     }
 
     private var recognitionText: some View {
@@ -220,7 +205,6 @@ public struct HomeView: View {
             : store.speechRecognition.recognizedText
         return ScrollView(.vertical, showsIndicators: false) {
             ZStack(alignment: .topLeading) {
-                // Placeholder
                 if displayText.isEmpty {
                     Text(l("panel.mic_hint"))
                         .font(.system(size: 20, weight: .regular))
@@ -228,7 +212,6 @@ public struct HomeView: View {
                         .padding(.horizontal, 24)
                         .padding(.top, 24)
                 }
-
                 Text(displayText.isEmpty ? "　" : displayText)
                     .font(.system(size: 20, weight: .regular))
                     .foregroundStyle(Color.primary)
@@ -241,6 +224,14 @@ public struct HomeView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // 상단과 동일하게 ScrollView에 직접 - Color.clear 오버레이 제거로 스크롤 가로채기 방지
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.5)
+                .onEnded { _ in
+                    guard !displayText.isEmpty else { return }
+                    store.send(.expandBottomPanel)
+                }
+        )
     }
 
     private var recognitionBottomRow: some View {

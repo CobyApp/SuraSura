@@ -138,28 +138,34 @@ public struct HomeView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        // 길게 누르면 전체화면 확장
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.5)
-                .onEnded { _ in
-                    guard !displayText.isEmpty else { return }
-                    store.send(.expandTopPanel)
-                }
-        )
         .overlay(alignment: .bottom) {
-            translationBottomRow
+            translationBottomRow(displayText: displayText)
         }
     }
 
-    private var translationBottomRow: some View {
+    private func translationBottomRow(displayText: String) -> some View {
         HStack(spacing: 10) {
+            // 확장 버튼
+            Button {
+                guard !displayText.isEmpty else { return }
+                store.send(.expandTopPanel)
+            } label: {
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Color.white.opacity(displayText.isEmpty ? 0.25 : 0.75))
+                    .frame(width: 36, height: 36)
+                    .background(Color.white.opacity(0.15), in: Circle())
+            }
+            .buttonStyle(.plain)
+
             Spacer()
 
             panelLangButton(language: store.topLanguage, fg: .white) {
                 store.send(.showTopPicker)
             }
             // 상단 마이크
-            MicButton(isActive: store.isSessionActive, color: Color.white.opacity(0.3)) {
+            MicButton(isActive: store.isSessionActive && store.activeMic == .top,
+                      color: Color.white.opacity(0.3)) {
                 store.send(store.isSessionActive ? .stopSessionTapped : .startTopSessionTapped)
             }
         }
@@ -193,9 +199,12 @@ public struct HomeView: View {
     }
 
     private var recognitionContent: some View {
-        recognitionText
+        let displayText = store.activeMic == .top
+            ? store.translation.translatedText
+            : store.speechRecognition.recognizedText
+        return recognitionText
             .overlay(alignment: .bottom) {
-                recognitionBottomRow
+                recognitionBottomRow(displayText: displayText)
             }
     }
 
@@ -224,17 +233,9 @@ public struct HomeView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        // 상단과 동일하게 ScrollView에 직접 - Color.clear 오버레이 제거로 스크롤 가로채기 방지
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.5)
-                .onEnded { _ in
-                    guard !displayText.isEmpty else { return }
-                    store.send(.expandBottomPanel)
-                }
-        )
     }
 
-    private var recognitionBottomRow: some View {
+    private func recognitionBottomRow(displayText: String) -> some View {
         HStack(spacing: 10) {
             // 설정
             circleBtn(icon: "gearshape",
@@ -256,6 +257,16 @@ public struct HomeView: View {
                 store.send(.swapLanguagesTapped)
             }
 
+            // 확장 버튼
+            circleBtn(
+                icon: "arrow.up.left.and.arrow.down.right",
+                fg: displayText.isEmpty ? Color.secondary.opacity(0.3) : Color.secondary,
+                bg: Color(.secondarySystemFill)
+            ) {
+                guard !displayText.isEmpty else { return }
+                store.send(.expandBottomPanel)
+            }
+
             Spacer()
 
             panelLangButton(language: store.bottomLanguage, fg: .primary) {
@@ -263,7 +274,8 @@ public struct HomeView: View {
             }
 
             // 마이크
-            MicButton(isActive: store.isSessionActive, color: kBlue) {
+            MicButton(isActive: store.isSessionActive && store.activeMic == .bottom,
+                      color: kBlue) {
                 store.send(store.isSessionActive ? .stopSessionTapped : .startSessionTapped)
             }
         }

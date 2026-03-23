@@ -53,7 +53,10 @@ public struct SpeechRecognitionReducer {
                 }
 
             case .recognizedTextUpdated(let text):
-                state.recognizedText = text
+                // 빈 문자열 무시 - 세션 종료 시 인식기가 빈 값을 마지막으로 보내 텍스트가 지워지는 현상 방지
+                if !text.isEmpty {
+                    state.recognizedText = text
+                }
                 return .none
 
             case .languageChanged(let language):

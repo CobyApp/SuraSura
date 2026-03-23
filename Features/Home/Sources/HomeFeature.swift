@@ -85,11 +85,11 @@ public struct HomeReducer {
             // MARK: - 세션
 
             case .startSessionTapped:
+                guard !state.isSessionActive else { return .none }
                 // 하단 마이크: bottomLanguage로 인식 → topLanguage로 번역
                 state.activeMic = .bottom
                 state.isSessionActive = true
-                state.speechRecognition.recognizedText = ""
-                state.translation.translatedText = ""
+                state.translation.translatedText = ""   // 번역 초기화 (recognizedText는 startListening에서 초기화)
                 state.speechRecognition.sourceLanguage = state.bottomLanguage
                 state.translation.targetLanguage = state.topLanguage
                 return .send(.speechRecognition(.startListening))
@@ -99,8 +99,7 @@ public struct HomeReducer {
                 // 상단 마이크: topLanguage로 인식 → bottomLanguage로 번역
                 state.activeMic = .top
                 state.isSessionActive = true
-                state.speechRecognition.recognizedText = ""
-                state.translation.translatedText = ""
+                state.translation.translatedText = ""   // 번역 초기화 (recognizedText는 startListening에서 초기화)
                 state.speechRecognition.sourceLanguage = state.topLanguage
                 state.translation.targetLanguage = state.bottomLanguage
                 return .send(.speechRecognition(.startListening))

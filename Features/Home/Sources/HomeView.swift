@@ -112,18 +112,36 @@ public struct HomeView: View {
     }
 
     private var translationContent: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            translationText
-                .padding(.horizontal, 24)
-                .padding(.top, 24)
-                .padding(.bottom, 130)
+        let displayText = store.isTopMicActive
+            ? store.speechRecognition.recognizedText
+            : store.translation.translatedText
+        return ScrollView(.vertical, showsIndicators: false) {
+            ZStack(alignment: .topLeading) {
+                // 플레이스홀더
+                if displayText.isEmpty {
+                    Text(l("panel.mic_hint"))
+                        .font(.system(size: 22, weight: .regular))
+                        .foregroundStyle(Color.white.opacity(0.45))
+                        .padding(.horizontal, 24)
+                        .padding(.top, 24)
+                }
+                Text(displayText.isEmpty ? "　" : displayText)
+                    .font(.system(size: 22, weight: .regular))
+                    .foregroundStyle(Color.white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .lineSpacing(6)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 24)
+                    .padding(.bottom, 130)
+                    .animation(.easeInOut(duration: 0.15), value: displayText)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         // 길게 누르면 전체화면 확장
         .simultaneousGesture(
             LongPressGesture(minimumDuration: 0.5)
                 .onEnded { _ in
-                    guard !store.translation.translatedText.isEmpty else { return }
+                    guard !displayText.isEmpty else { return }
                     store.send(.expandTopPanel)
                 }
         )
@@ -132,24 +150,17 @@ public struct HomeView: View {
         }
     }
 
-    private var translationText: some View {
-        // 상단 마이크 활성 시: 상단에 인식 텍스트(말한 내용) 표시
-        let displayText = store.isTopMicActive
-            ? store.speechRecognition.recognizedText
-            : store.translation.translatedText
-        return Text(displayText.isEmpty ? "　" : displayText)
-            .font(.system(size: 22, weight: .regular))
-            .foregroundStyle(Color.white)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .lineSpacing(6)
-            .animation(.easeInOut(duration: 0.15), value: displayText)
-    }
-
     private var translationBottomRow: some View {
         HStack(spacing: 10) {
             Spacer()
 
-            panelLangButton(language: store.translation.targetLanguage, fg: .white) {
+            // 상단 마이크 활성 시: 실제로 인식 중인 언어(스왑된 sourceLanguage) 표시
+            panelLangButton(
+                language: store.isTopMicActive
+                    ? store.speechRecognition.sourceLanguage
+                    : store.translation.targetLanguage,
+                fg: .white
+            ) {
                 store.send(.showTopPicker)
             }
             // 상단 마이크
@@ -262,8 +273,13 @@ public struct HomeView: View {
 
             Spacer()
 
-            // 언어 선택
-            panelLangButton(language: store.speechRecognition.sourceLanguage, fg: .primary) {
+            // 상단 마이크 활성 시: 번역 결과 언어(스왑된 targetLanguage) 표시
+            panelLangButton(
+                language: store.isTopMicActive
+                    ? store.translation.targetLanguage
+                    : store.speechRecognition.sourceLanguage,
+                fg: .primary
+            ) {
                 store.send(.showBottomPicker)
             }
 

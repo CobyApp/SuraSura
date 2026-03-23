@@ -1,101 +1,71 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuraSura – プライバシーポリシー / Privacy Policy</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SuraSura – Privacy Policy</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --indigo: #6366f1; --green: #34d399; --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --muted: #94a3b8; }
-    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.8; }
-    nav { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2rem; border-bottom: 1px solid #1e293b; }
-    .nav-logo { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, var(--indigo), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
-    .nav-links a { color: var(--muted); text-decoration: none; margin-left: 1.5rem; font-size: .95rem; }
-    .container { max-width: 780px; margin: 0 auto; padding: 4rem 1.5rem; }
-    h1 { font-size: 2.2rem; font-weight: 900; margin-bottom: .4rem; }
-    .date { color: var(--muted); font-size: .9rem; margin-bottom: 3rem; }
-    h2 { font-size: 1.15rem; font-weight: 700; color: var(--indigo); margin: 2rem 0 .8rem; }
-    p { color: var(--muted); margin-bottom: .8rem; font-size: .97rem; }
-    ul { color: var(--muted); padding-left: 1.5rem; margin-bottom: .8rem; font-size: .97rem; }
-    ul li { margin-bottom: .4rem; }
-    .highlight { background: var(--card); border-left: 3px solid var(--green); border-radius: 0 12px 12px 0; padding: 1.2rem 1.4rem; margin: 1.5rem 0; }
-    .highlight p { color: var(--text); margin: 0; }
-    footer { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: .85rem; border-top: 1px solid #1e293b; margin-top: 3rem; }
-    footer a { color: var(--muted); text-decoration: none; margin: 0 .5rem; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f7fa; color: #1a1a2e; line-height: 1.7; }
+    header { background: linear-gradient(135deg, #1D88DE, #0c5aa0); color: #fff; padding: 48px 24px 36px; text-align: center; }
+    header h1 { font-size: 2rem; font-weight: 700; }
+    header p  { margin-top: 8px; opacity: 0.85; font-size: 0.95rem; }
+    main { max-width: 760px; margin: 40px auto; padding: 0 24px 60px; }
+    section { background: #fff; border-radius: 12px; padding: 28px 32px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    h2 { font-size: 1.15rem; font-weight: 600; color: #1D88DE; margin-bottom: 12px; }
+    p, li { font-size: 0.95rem; color: #444; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 6px; }
+    footer { text-align: center; color: #999; font-size: 0.85rem; padding-bottom: 32px; }
+    a { color: #1D88DE; text-decoration: none; }
   </style>
 </head>
 <body>
-
-<nav>
-  <a href="index.html" class="nav-logo">SuraSura</a>
-  <div class="nav-links">
-    <a href="index.html">ホーム</a>
-    <a href="support.html">サポート</a>
-  </div>
-</nav>
-
-<div class="container">
-  <h1>プライバシーポリシー<br><span style="font-size:1.5rem;color:var(--muted)">Privacy Policy</span></h1>
-  <p class="date">最終更新 / Last updated: March 21, 2025</p>
-
-  <div class="highlight">
-    <p>🔒 SuraSura はユーザーの音声データをサーバーに保存しません。<br>SuraSura does <strong>not</strong> store your voice data on any server.</p>
-  </div>
-
-  <h2>1. 収集する情報 / Information We Collect</h2>
-  <p>SuraSura は以下の情報を使用します：</p>
-  <ul>
-    <li><strong>音声データ</strong>：音声認識のためにデバイス上およびApple Speech Recognition APIに送信されます。翻訳後に破棄され、永続的に保存されません。</li>
-    <li><strong>アプリ設定</strong>：言語設定、カラーモードなどの設定情報をデバイス内（UserDefaults）に保存します。</li>
-  </ul>
-  <p>We use the following information:</p>
-  <ul>
-    <li><strong>Voice data</strong>: Sent to Apple's Speech Recognition API for transcription. It is discarded after translation and is never stored persistently.</li>
-    <li><strong>App preferences</strong>: Language selection, color mode, etc., stored locally on your device (UserDefaults).</li>
-  </ul>
-
-  <h2>2. 収集しない情報 / Information We Do NOT Collect</h2>
-  <ul>
-    <li>氏名・メールアドレス等の個人識別情報 / Personal identifiers (name, email, etc.)</li>
-    <li>位置情報 / Location data</li>
-    <li>デバイス識別子（IDFA等）/ Device identifiers (IDFA, etc.)</li>
-    <li>クラッシュレポート・分析データ / Analytics or crash data</li>
-    <li>広告識別子 / Advertising identifiers</li>
-  </ul>
-
-  <h2>3. サードパーティサービス / Third-Party Services</h2>
-  <p>SuraSura は以下のサードパーティAPIを使用します：</p>
-  <ul>
-    <li><strong>Apple Speech Recognition</strong>：音声をテキストに変換するために使用。<a href="https://www.apple.com/legal/privacy/" style="color:var(--indigo)" target="_blank">Apple プライバシーポリシー</a></li>
-    <li><strong>Google Cloud Translation API</strong>：テキストの翻訳に使用。<a href="https://policies.google.com/privacy" style="color:var(--indigo)" target="_blank">Google プライバシーポリシー</a></li>
-  </ul>
-  <p>These services have their own privacy policies. We recommend reviewing them.</p>
-
-  <h2>4. データの保存 / Data Storage</h2>
-  <p>SuraSuraはユーザーデータをSuraSuraのサーバーに送信・保存しません。全てのデータはお使いのデバイス上にのみ保存されます。</p>
-  <p>SuraSura does not transmit or store user data on SuraSura's servers. All data remains solely on your device.</p>
-
-  <h2>5. 子どものプライバシー / Children's Privacy</h2>
-  <p>本アプリは13歳未満のお子様を対象としていません。13歳未満のお子様から意図的に個人情報を収集することはありません。</p>
-  <p>This app is not directed to children under 13. We do not knowingly collect personal information from children under 13.</p>
-
-  <h2>6. 変更について / Changes to This Policy</h2>
-  <p>プライバシーポリシーを変更した場合、このページを更新し、最終更新日を変更します。</p>
-  <p>If we make changes, we will update this page and revise the "Last updated" date.</p>
-
-  <h2>7. お問い合わせ / Contact</h2>
-  <p>プライバシーに関するご質問は <a href="mailto:support@surasura.app" style="color:var(--indigo)">support@surasura.app</a> までご連絡ください。</p>
-  <p>For privacy inquiries, please contact <a href="mailto:support@surasura.app" style="color:var(--indigo)">support@surasura.app</a>.</p>
-</div>
-
-<footer>
-  <p>© 2025 SuraSura. All rights reserved.</p>
-  <p style="margin-top:.5rem">
-    <a href="index.html">ホーム</a>
-    <a href="support.html">サポート</a>
-    <a href="privacy.html">プライバシーポリシー</a>
-  </p>
-</footer>
-
+<header>
+  <h1>SuraSura</h1>
+  <p>Privacy Policy · 개인정보 처리방침 · プライバシーポリシー · 隐私政策</p>
+</header>
+<main>
+  <section>
+    <h2>Overview</h2>
+    <p>SuraSura is a real-time voice translation app developed by Coby (doyoung@minami-hd.co.jp). We are committed to protecting your privacy.</p>
+  </section>
+  <section>
+    <h2>Data We Do Not Collect</h2>
+    <p>SuraSura does <strong>not</strong>:</p>
+    <ul>
+      <li>Collect, store, or transmit your voice recordings to our servers</li>
+      <li>Create user accounts or require registration</li>
+      <li>Track your location</li>
+      <li>Share any personal data with third parties for advertising</li>
+      <li>Use analytics SDKs or ad networks</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Microphone &amp; Speech Recognition</h2>
+    <p>The App uses Apple's on-device <strong>Speech Recognition</strong> framework. Audio may be processed by Apple's servers under Apple's own privacy policy (<a href="https://www.apple.com/legal/privacy/" target="_blank">apple.com/legal/privacy</a>). SuraSura never receives or stores your raw audio.</p>
+  </section>
+  <section>
+    <h2>Translation</h2>
+    <p>Text translation uses Apple's <strong>Translation</strong> framework. SuraSura does not log or retain translated text beyond your current session.</p>
+  </section>
+  <section>
+    <h2>Text-to-Speech (TTS)</h2>
+    <p>Playback uses Apple's <strong>AVSpeechSynthesizer</strong>, which runs entirely on-device. No data leaves your device for this feature.</p>
+  </section>
+  <section>
+    <h2>Children's Privacy</h2>
+    <p>The App does not knowingly collect personal information from children under 13.</p>
+  </section>
+  <section>
+    <h2>Changes to This Policy</h2>
+    <p>We may update this policy from time to time. Effective date: <strong>March 2025</strong></p>
+  </section>
+  <section>
+    <h2>Contact</h2>
+    <p>Questions? <a href="mailto:doyoung@minami-hd.co.jp">doyoung@minami-hd.co.jp</a></p>
+  </section>
+</main>
+<footer><p>© 2025 Coby · SuraSura</p></footer>
 </body>
 </html>

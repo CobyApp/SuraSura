@@ -80,30 +80,27 @@ public struct HomeReducer {
             case .stopSessionTapped:
                 state.isSessionActive = false
                 if state.swappedForTopSession {
-                    state.swappedForTopSession = false
-                    state.isTopMicActive = false
+                    // 언어를 동기적으로 원복 → 깜빡임 없음
                     let src = state.speechRecognition.sourceLanguage
                     let tgt = state.translation.targetLanguage
-                    return .run { send in
-                        await send(.speechRecognition(.stopListening))
-                        await send(.speechRecognition(.languageChanged(tgt)))
-                        await send(.translation(.languageChanged(src)))
-                    }
+                    state.speechRecognition.sourceLanguage = tgt
+                    state.translation.targetLanguage = src
+                    state.swappedForTopSession = false
+                    state.isTopMicActive = false
                 }
                 return .send(.speechRecognition(.stopListening))
 
             case .startTopSessionTapped:
                 guard !state.isSessionActive else { return .none }
+                // 언어를 동기적으로 직접 스왑 → UI가 한 번에 갱신되어 깜빡임 없음
+                let src = state.speechRecognition.sourceLanguage
+                let tgt = state.translation.targetLanguage
+                state.speechRecognition.sourceLanguage = tgt
+                state.translation.targetLanguage = src
                 state.isSessionActive = true
                 state.swappedForTopSession = true
                 state.isTopMicActive = true
-                let src = state.speechRecognition.sourceLanguage
-                let tgt = state.translation.targetLanguage
-                return .run { send in
-                    await send(.speechRecognition(.languageChanged(tgt)))
-                    await send(.translation(.languageChanged(src)))
-                    await send(.speechRecognition(.startListening))
-                }
+                return .send(.speechRecognition(.startListening))
 
             case .swapLanguagesTapped:
                 let src = state.speechRecognition.sourceLanguage

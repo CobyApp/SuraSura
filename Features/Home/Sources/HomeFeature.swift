@@ -2,9 +2,14 @@ import Foundation
 import ComposableArchitecture
 import SpeechRecognitionFeature
 import TranslationFeature
+import APIClient
 
 public enum AppColorScheme: String, CaseIterable, Equatable {
     case system, light, dark
+}
+
+public enum ActiveMic: String, Equatable, CaseIterable {
+    case bottom, top
 }
 
 @Reducer
@@ -27,10 +32,11 @@ public struct HomeReducer {
         // 텍스트 전체화면 확장
         public var isTopExpanded: Bool = false
         public var isBottomExpanded: Bool = false
-        // 상단 마이크로 세션 시작 시 언어가 임시 스왑된 상태인지 추적
-        public var swappedForTopSession: Bool = false
-        // 상단 마이크 활성 중: 상단=인식텍스트, 하단=번역결과 로 표시
-        public var isTopMicActive: Bool = false
+        // 상단/하단 패널 언어 (스왑 없이 직접 관리)
+        public var topLanguage: SupportedLanguage = .english
+        public var bottomLanguage: SupportedLanguage = .korean
+        // 현재 활성 마이크 패널
+        public var activeMic: ActiveMic = .bottom
 
         public init() {
             self.appLanguage = UserDefaults.standard.string(forKey: "appLanguage") ?? ""
@@ -40,9 +46,11 @@ public struct HomeReducer {
     public enum Action {
         case speechRecognition(SpeechRecognitionReducer.Action)
         case translation(TranslationReducer.Action)
-        case startSessionTapped
+        case startSessionTapped        // 하단 마이크
         case stopSessionTapped
-        case startTopSessionTapped  // 상단 패널 마이크 — 언어 방향 반전 후 녹음 시작
+        case startTopSessionTapped     // 상단 마이크
+        case topLanguageChanged(SupportedLanguage)
+        case bottomLanguageChanged(SupportedLanguage)
         case swapLanguagesTapped
         case toggleFaceToFaceTapped
         case colorSchemeChanged(AppColorScheme)
@@ -73,49 +81,70 @@ public struct HomeReducer {
         }
         Reduce { state, action in
             switch action {
+
+            // MARK: - 세션
+
             case .startSessionTapped:
+                // 하단 마이크: bottomLanguage로 인식 → topLanguage로 번역
+                state.activeMic = .bottom
                 state.isSessionActive = true
-                // 상단 마이크로 쓴 뒤였다면 언어 원복 + 텍스트 초기화
-                if state.swappedForTopSession {
-                    let src = state.speechRecognition.sourceLanguage
-                    let tgt = state.translation.targetLanguage
-                    state.speechRecognition.sourceLanguage = tgt
-                    state.translation.targetLanguage = src
-                    state.swappedForTopSession = false
-                    state.speechRecognition.recognizedText = ""
-                    state.translation.translatedText = ""
-                }
-                state.isTopMicActive = false
+                state.speechRecognition.recognizedText = ""
+                state.translation.translatedText = ""
+                state.speechRecognition.sourceLanguage = state.bottomLanguage
+                state.translation.targetLanguage = state.topLanguage
+                return .send(.speechRecognition(.startListening))
+
+            case .startTopSessionTapped:
+                guard !state.isSessionActive else { return .none }
+                // 상단 마이크: topLanguage로 인식 → bottomLanguage로 번역
+                state.activeMic = .top
+                state.isSessionActive = true
+                state.speechRecognition.recognizedText = ""
+                state.translation.translatedText = ""
+                state.speechRecognition.sourceLanguage = state.topLanguage
+                state.translation.targetLanguage = state.bottomLanguage
                 return .send(.speechRecognition(.startListening))
 
             case .stopSessionTapped:
                 state.isSessionActive = false
-                // 언어·isTopMicActive 유지 → 멈춰도 텍스트·언어 레이블 그대로 보존
-                // 원복은 하단 마이크 시작 시 처리
                 return .send(.speechRecognition(.stopListening))
 
-            case .startTopSessionTapped:
-                guard !state.isSessionActive else { return .none }
-                // 언어를 동기적으로 직접 스왑 → UI가 한 번에 갱신되어 깜빡임 없음
-                let src = state.speechRecognition.sourceLanguage
-                let tgt = state.translation.targetLanguage
-                state.speechRecognition.sourceLanguage = tgt
-                state.translation.targetLanguage = src
-                // 이전 세션 텍스트 초기화 → 상단 마이크 시작 시 기존 내용이 위아래로 이동하는 현상 방지
-                state.speechRecognition.recognizedText = ""
-                state.translation.translatedText = ""
-                state.isSessionActive = true
-                state.swappedForTopSession = true
-                state.isTopMicActive = true
-                return .send(.speechRecognition(.startListening))
+            // MARK: - 언어 선택
+
+            case .topLanguageChanged(let lang):
+                state.topLanguage = lang
+                // 현재 세션에 반영
+                if state.activeMic == .bottom {
+                    state.translation.targetLanguage = lang
+                } else {
+                    state.speechRecognition.sourceLanguage = lang
+                }
+                return .none
+
+            case .bottomLanguageChanged(let lang):
+                state.bottomLanguage = lang
+                if state.activeMic == .bottom {
+                    state.speechRecognition.sourceLanguage = lang
+                } else {
+                    state.translation.targetLanguage = lang
+                }
+                return .none
 
             case .swapLanguagesTapped:
-                let src = state.speechRecognition.sourceLanguage
-                let tgt = state.translation.targetLanguage
-                return .merge(
-                    .send(.speechRecognition(.languageChanged(tgt))),
-                    .send(.translation(.languageChanged(src)))
-                )
+                let tmp = state.topLanguage
+                state.topLanguage = state.bottomLanguage
+                state.bottomLanguage = tmp
+                // speech/translation 언어도 동기화
+                if state.activeMic == .bottom {
+                    state.speechRecognition.sourceLanguage = state.bottomLanguage
+                    state.translation.targetLanguage = state.topLanguage
+                } else {
+                    state.speechRecognition.sourceLanguage = state.topLanguage
+                    state.translation.targetLanguage = state.bottomLanguage
+                }
+                return .none
+
+            // MARK: - UI 상태
 
             case .toggleFaceToFaceTapped:
                 state.isFaceToFaceMode.toggle()
@@ -174,7 +203,8 @@ public struct HomeReducer {
                 state.isBottomExpanded = false
                 return .none
 
-            // 번역 완료 → isAutoSpeakEnabled면 자동 TTS
+            // MARK: - 자동 TTS / 번역 연결
+
             case .translation(.translationCompleted):
                 guard state.isAutoSpeakEnabled else { return .none }
                 return .send(.translation(.speakRequested))

@@ -102,6 +102,7 @@ let project = Project(
             dependencies: [
                 .target(name: "SpeechRecognitionFeature"),
                 .target(name: "TranslationFeature"),
+                .target(name: "APIClient"),
                 .target(name: "DesignSystem"),
                 .external(name: "ComposableArchitecture"),
             ],

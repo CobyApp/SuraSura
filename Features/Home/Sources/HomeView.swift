@@ -59,7 +59,7 @@ public struct HomeView: View {
             set: { if !$0 { store.send(.collapseTopPanel) } }
         )) {
             ExpandedTextView(
-                text: store.isTopMicActive
+                text: store.activeMic == .top
                     ? store.speechRecognition.recognizedText
                     : store.translation.translatedText,
                 bgColor: kBlue, fgColor: .white,
@@ -74,7 +74,7 @@ public struct HomeView: View {
             set: { if !$0 { store.send(.collapseBottomPanel) } }
         )) {
             ExpandedTextView(
-                text: store.isTopMicActive
+                text: store.activeMic == .top
                     ? store.translation.translatedText
                     : store.speechRecognition.recognizedText,
                 bgColor: Color(.systemBackground), fgColor: .primary,
@@ -91,11 +91,11 @@ public struct HomeView: View {
         ZStack {
             if store.isTopPickerPresented {
                 LanguagePickerOverlay(
-                    selected: store.translation.targetLanguage,
+                    selected: store.topLanguage,
                     bgColor: kBlue, rowFg: .white, accentColor: .white,
                     bundle: appBundle,
                     appLanguage: store.appLanguage,
-                    onSelect: { store.send(.translation(.languageChanged($0))) },
+                    onSelect: { store.send(.topLanguageChanged($0)) },
                     onDismiss: { store.send(.hideTopPicker) }
                 )
                 .scaleEffect(x: store.isFaceToFaceMode ? -1 : 1,
@@ -112,7 +112,8 @@ public struct HomeView: View {
     }
 
     private var translationContent: some View {
-        let displayText = store.isTopMicActive
+        // 상단 마이크 활성: 상단=말한내용, 하단=번역결과
+        let displayText = store.activeMic == .top
             ? store.speechRecognition.recognizedText
             : store.translation.translatedText
         return ScrollView(.vertical, showsIndicators: false) {
@@ -154,13 +155,7 @@ public struct HomeView: View {
         HStack(spacing: 10) {
             Spacer()
 
-            // 상단 마이크 활성 시: 실제로 인식 중인 언어(스왑된 sourceLanguage) 표시
-            panelLangButton(
-                language: store.isTopMicActive
-                    ? store.speechRecognition.sourceLanguage
-                    : store.translation.targetLanguage,
-                fg: .white
-            ) {
+            panelLangButton(language: store.topLanguage, fg: .white) {
                 store.send(.showTopPicker)
             }
             // 상단 마이크
@@ -183,11 +178,11 @@ public struct HomeView: View {
         ZStack {
             if store.isBottomPickerPresented {
                 LanguagePickerOverlay(
-                    selected: store.speechRecognition.sourceLanguage,
+                    selected: store.bottomLanguage,
                     bgColor: Color(.systemBackground), rowFg: .primary, accentColor: kBlue,
                     bundle: appBundle,
                     appLanguage: store.appLanguage,
-                    onSelect: { store.send(.speechRecognition(.languageChanged($0))) },
+                    onSelect: { store.send(.bottomLanguageChanged($0)) },
                     onDismiss: { store.send(.hideBottomPicker) }
                 )
             } else {
@@ -220,8 +215,7 @@ public struct HomeView: View {
     }
 
     private var recognitionText: some View {
-        // 상단 마이크 활성 시: 하단에 번역 결과 표시
-        let displayText = store.isTopMicActive
+        let displayText = store.activeMic == .top
             ? store.translation.translatedText
             : store.speechRecognition.recognizedText
         return ScrollView(.vertical, showsIndicators: false) {
@@ -273,13 +267,7 @@ public struct HomeView: View {
 
             Spacer()
 
-            // 상단 마이크 활성 시: 번역 결과 언어(스왑된 targetLanguage) 표시
-            panelLangButton(
-                language: store.isTopMicActive
-                    ? store.translation.targetLanguage
-                    : store.speechRecognition.sourceLanguage,
-                fg: .primary
-            ) {
+            panelLangButton(language: store.bottomLanguage, fg: .primary) {
                 store.send(.showBottomPicker)
             }
 

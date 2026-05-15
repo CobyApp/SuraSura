@@ -32,24 +32,24 @@ public final class TranslationBridge {
         let deadline = ContinuousClock.now.advanced(by: .seconds(10))
         while session == nil || registeredSource != source || registeredTarget != target {
             if ContinuousClock.now >= deadline {
-                throw AppleTranslationError.sessionNotReady
+                throw TranslationError.sessionNotReady
             }
             try await Task.sleep(for: .milliseconds(50))
         }
         guard let session = session else {
-            throw AppleTranslationError.sessionNotReady
+            throw TranslationError.sessionNotReady
         }
 
         do {
             let response = try await session.translate(text)
             return response.targetText
         } catch {
-            throw AppleTranslationError.translationFailed
+            throw TranslationError.translationFailed
         }
     }
 }
 
-public enum AppleTranslationError: LocalizedError {
+public enum TranslationError: LocalizedError {
     case sessionNotReady
     case translationFailed
 

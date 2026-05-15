@@ -21,7 +21,6 @@ public enum SupportedLanguage: String, CaseIterable, Equatable, Sendable {
     case polish             = "pl"
     case hindi              = "hi"
     case swedish            = "sv"
-    case nepali             = "ne"
 
     // MARK: - Display
 
@@ -47,59 +46,25 @@ public enum SupportedLanguage: String, CaseIterable, Equatable, Sendable {
         case .polish:             return "Polski"
         case .hindi:              return "हिन्दी"
         case .swedish:            return "Svenska"
-        case .nepali:             return "नेपाली"
         }
     }
 
-    // MARK: - Apple Speech STT (nil = 미지원 → Google REST fallback)
+    // MARK: - BCP-47 (STT / Translation / TTS 공통)
 
-    public var appleSpeechLocale: Locale? {
-        switch self {
-        case .korean:             return Locale(identifier: "ko-KR")
-        case .english:            return Locale(identifier: "en-US")
-        case .japanese:           return Locale(identifier: "ja-JP")
-        case .chineseSimplified:  return Locale(identifier: "zh-Hans")
-        case .chineseTraditional: return Locale(identifier: "zh-Hant")
-        case .spanish:            return Locale(identifier: "es-ES")
-        case .french:             return Locale(identifier: "fr-FR")
-        case .german:             return Locale(identifier: "de-DE")
-        case .italian:            return Locale(identifier: "it-IT")
-        case .portuguese:         return Locale(identifier: "pt-BR")
-        case .russian:            return Locale(identifier: "ru-RU")
-        case .arabic:             return Locale(identifier: "ar-SA")
-        case .dutch:              return Locale(identifier: "nl-NL")
-        case .turkish:            return Locale(identifier: "tr-TR")
-        case .vietnamese:         return Locale(identifier: "vi-VN")
-        case .indonesian:         return Locale(identifier: "id-ID")
-        case .thai:               return Locale(identifier: "th-TH")
-        case .polish:             return Locale(identifier: "pl-PL")
-        case .swedish:            return Locale(identifier: "sv-SE")
-        case .hindi:              return nil  // 불안정 → Google REST
-        case .nepali:             return nil  // 미지원 → Google REST
-        }
-    }
-
-    // MARK: - Google STT / Translation
-
-    public var googleSpeechCode: String      { rawValue }
-    public var googleTranslationCode: String { rawValue }
-
-    // MARK: - Google TTS
-
-    public var googleTTSCode: String {
+    public var bcp47Code: String {
         switch self {
         case .korean:             return "ko-KR"
         case .english:            return "en-US"
         case .japanese:           return "ja-JP"
-        case .chineseSimplified:  return "cmn-CN"
-        case .chineseTraditional: return "cmn-TW"
+        case .chineseSimplified:  return "zh-Hans"
+        case .chineseTraditional: return "zh-Hant"
         case .spanish:            return "es-ES"
         case .french:             return "fr-FR"
         case .german:             return "de-DE"
         case .italian:            return "it-IT"
         case .portuguese:         return "pt-BR"
         case .russian:            return "ru-RU"
-        case .arabic:             return "ar-XA"
+        case .arabic:             return "ar-SA"
         case .dutch:              return "nl-NL"
         case .turkish:            return "tr-TR"
         case .vietnamese:         return "vi-VN"
@@ -108,18 +73,12 @@ public enum SupportedLanguage: String, CaseIterable, Equatable, Sendable {
         case .polish:             return "pl-PL"
         case .hindi:              return "hi-IN"
         case .swedish:            return "sv-SE"
-        case .nepali:             return "ne-NP"  // ✅ Google TTS 지원!
         }
     }
 
-    public var googleTTSGender: String {
-        switch self {
-        case .korean, .japanese, .french, .italian,
-             .vietnamese, .thai, .indonesian, .nepali:
-            return "FEMALE"
-        default:
-            return "NEUTRAL"
-        }
+    /// STT용 Locale
+    public var sttLocale: Locale {
+        Locale(identifier: bcp47Code)
     }
 }
 
@@ -148,7 +107,6 @@ extension SupportedLanguage {
         case .polish:             return "🇵🇱"
         case .hindi:              return "🇮🇳"
         case .swedish:            return "🇸🇪"
-        case .nepali:             return "🇳🇵"
         }
     }
 
@@ -176,11 +134,9 @@ extension SupportedLanguage {
         case .polish:             return "Polski"
         case .hindi:              return "हिन्दी"
         case .swedish:            return "Svenska"
-        case .nepali:             return "नेपाली"
         }
     }
 }
-
 
 extension SupportedLanguage {
     // MARK: - Locale Identifier (for Locale API)
@@ -207,7 +163,6 @@ extension SupportedLanguage {
         case .polish:             return "pl"
         case .hindi:              return "hi"
         case .swedish:            return "sv"
-        case .nepali:             return "ne"
         }
     }
 
@@ -223,44 +178,9 @@ extension SupportedLanguage {
         if appLanguage.isEmpty {
             locale = Locale.current
         } else {
-            // "zh-Hans" BCP-47 → Locale 생성 시 underscore 형식으로 변환
             let identifier = appLanguage.replacingOccurrences(of: "-", with: "_")
             locale = Locale(identifier: identifier)
         }
         return locale.localizedString(forIdentifier: localeIdentifier) ?? displayName
-    }
-}
-
-extension SupportedLanguage {
-    /// Apple BCP-47 코드 — STT / Translation / TTS 공통
-    public var bcp47Code: String {
-        switch self {
-        case .korean:             return "ko-KR"
-        case .english:            return "en-US"
-        case .japanese:           return "ja-JP"
-        case .chineseSimplified:  return "zh-Hans"
-        case .chineseTraditional: return "zh-Hant"
-        case .spanish:            return "es-ES"
-        case .french:             return "fr-FR"
-        case .german:             return "de-DE"
-        case .italian:            return "it-IT"
-        case .portuguese:         return "pt-BR"
-        case .russian:            return "ru-RU"
-        case .arabic:             return "ar-SA"
-        case .dutch:              return "nl-NL"
-        case .turkish:            return "tr-TR"
-        case .vietnamese:         return "vi-VN"
-        case .indonesian:         return "id-ID"
-        case .thai:               return "th-TH"
-        case .polish:             return "pl-PL"
-        case .hindi:              return "hi-IN"
-        case .swedish:            return "sv-SE"
-        case .nepali:             return "ne-NP"
-        }
-    }
-
-    /// STT용 Locale — bcp47Code로 생성
-    public var sttLocale: Locale {
-        Locale(identifier: bcp47Code)
     }
 }

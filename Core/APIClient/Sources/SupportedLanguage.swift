@@ -230,3 +230,37 @@ extension SupportedLanguage {
         return locale.localizedString(forIdentifier: localeIdentifier) ?? displayName
     }
 }
+
+extension SupportedLanguage {
+    /// Apple BCP-47 코드 — STT / Translation / TTS 공통
+    public var bcp47Code: String {
+        switch self {
+        case .korean:             return "ko-KR"
+        case .english:            return "en-US"
+        case .japanese:           return "ja-JP"
+        case .chineseSimplified:  return "zh-Hans"
+        case .chineseTraditional: return "zh-Hant"
+        case .spanish:            return "es-ES"
+        case .french:             return "fr-FR"
+        case .german:             return "de-DE"
+        case .italian:            return "it-IT"
+        case .portuguese:         return "pt-BR"
+        case .russian:            return "ru-RU"
+        case .arabic:             return "ar-SA"
+        case .dutch:              return "nl-NL"
+        case .turkish:            return "tr-TR"
+        case .vietnamese:         return "vi-VN"
+        case .indonesian:         return "id-ID"
+        case .thai:               return "th-TH"
+        case .polish:             return "pl-PL"
+        case .hindi:              return "hi-IN"
+        case .swedish:            return "sv-SE"
+        case .nepali:             return "ne-NP"
+        }
+    }
+
+    /// STT용 Locale — bcp47Code로 생성
+    public var sttLocale: Locale {
+        Locale(identifier: bcp47Code)
+    }
+}

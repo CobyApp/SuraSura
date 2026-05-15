@@ -13,6 +13,7 @@ final class SpeechClientLive: @unchecked Sendable {
     private var recognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
+    private var setupTask: Task<Void, Never>?
 
     private init() {}
 
@@ -28,19 +29,31 @@ final class SpeechClientLive: @unchecked Sendable {
 
         return AsyncStream { continuation in
             continuation.onTermination = { @Sendable [weak self] _ in
+                self?.setupTask?.cancel()
                 Task { await self?.stopStreaming() }
             }
 
-            Task {
+            self.setupTask = Task {
                 let request = SFSpeechAudioBufferRecognitionRequest()
                 request.shouldReportPartialResults = true
                 request.requiresOnDeviceRecognition = true
                 self.recognitionRequest = request
 
+                if Task.isCancelled {
+                    continuation.finish()
+                    return
+                }
+
                 do {
                     let session = AVAudioSession.sharedInstance()
                     try session.setCategory(.record, mode: .measurement, options: .duckOthers)
                     try session.setActive(true, options: .notifyOthersOnDeactivation)
+
+                    if Task.isCancelled {
+                        try? AVAudioSession.sharedInstance().setActive(false)
+                        continuation.finish()
+                        return
+                    }
 
                     let inputNode = self.audioEngine.inputNode
                     let format = inputNode.outputFormat(forBus: 0)
@@ -48,6 +61,14 @@ final class SpeechClientLive: @unchecked Sendable {
                     inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
                         request.append(buffer)
                     }
+
+                    if Task.isCancelled {
+                        inputNode.removeTap(onBus: 0)
+                        try? AVAudioSession.sharedInstance().setActive(false)
+                        continuation.finish()
+                        return
+                    }
+
                     try self.audioEngine.start()
                 } catch {
                     try? AVAudioSession.sharedInstance().setActive(false)
@@ -68,8 +89,11 @@ final class SpeechClientLive: @unchecked Sendable {
     }
 
     func stopStreaming() async {
+        setupTask?.cancel()
+        setupTask = nil
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
+        audioEngine.reset()
         recognitionRequest?.endAudio()
         recognitionTask?.cancel()
         recognitionRequest = nil

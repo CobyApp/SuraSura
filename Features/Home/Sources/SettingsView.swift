@@ -1,12 +1,26 @@
 import SwiftUI
 import ComposableArchitecture
+import APIClient
 import DesignSystem
+import Translation
 
 struct SettingsView: View {
     let store: StoreOf<HomeReducer>
 
+    @State private var modelStatus: [SupportedLanguage: LanguageAvailability.Status] = [:]
+
     private var bundle: Bundle {
         Bundle.localizedModule(language: store.appLanguage)
+    }
+
+    private var pivotLanguage: SupportedLanguage { store.bottomLanguage }
+
+    private var downloadConfiguration: TranslationSession.Configuration? {
+        guard let target = store.pendingTranslationDownload else { return nil }
+        return TranslationSession.Configuration(
+            source: Locale.Language(identifier: pivotLanguage.bcp47Code),
+            target: Locale.Language(identifier: target.bcp47Code)
+        )
     }
 
     var body: some View {
@@ -18,6 +32,7 @@ struct SettingsView: View {
                     languageCard
                     appearanceCard
                     translationCard
+                    modelsCard
                     versionFooter
                 }
                 .padding(.horizontal, 20)
@@ -26,6 +41,28 @@ struct SettingsView: View {
             }
         }
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
+        .task(id: pivotLanguage) {
+            await refreshModelStatus()
+        }
+        .translationTask(downloadConfiguration) { session in
+            try? await session.prepareTranslation()
+            await refreshModelStatus()
+            await MainActor.run {
+                store.send(.translationDownloadFinished)
+            }
+        }
+    }
+
+    private func refreshModelStatus() async {
+        let availability = LanguageAvailability()
+        let source = Locale.Language(identifier: pivotLanguage.bcp47Code)
+        for lang in SupportedLanguage.allCases where lang != pivotLanguage {
+            let target = Locale.Language(identifier: lang.bcp47Code)
+            let status = await availability.status(from: source, to: target)
+            await MainActor.run {
+                modelStatus[lang] = status
+            }
+        }
     }
 
     // MARK: - 드래그 핸들
@@ -199,6 +236,102 @@ struct SettingsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+
+    // MARK: - 번역 모델 다운로드 카드
+
+    private var modelsCard: some View {
+        settingsCard(
+            icon: "arrow.down.circle.fill",
+            iconColor: Color.green,
+            title: "번역 모델"
+        ) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("기준 언어 \(pivotLanguage.flag) \(pivotLanguage.localizedName(in: store.appLanguage))와의 페어를 미리 받을 수 있습니다.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.bottom, 4)
+
+                let langs = SupportedLanguage.allCases.filter { $0 != pivotLanguage }
+                ForEach(Array(langs.enumerated()), id: \.element) { idx, lang in
+                    modelRow(lang)
+                    if idx < langs.count - 1 {
+                        Divider().padding(.leading, 44).opacity(0.4)
+                    }
+                }
+            }
+            .padding(.top, 2)
+        }
+    }
+
+    private func modelRow(_ lang: SupportedLanguage) -> some View {
+        let status = modelStatus[lang]
+        let isDownloading = store.pendingTranslationDownload == lang
+
+        return HStack(spacing: 12) {
+            Text(lang.flag)
+                .font(.system(size: 20))
+                .frame(width: 28)
+            Text(lang.localizedName(in: store.appLanguage))
+                .font(.system(size: 16))
+                .foregroundStyle(Color.primary)
+            Spacer()
+            modelStatusView(status: status, isDownloading: isDownloading, lang: lang)
+        }
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+    }
+
+    @ViewBuilder
+    private func modelStatusView(
+        status: LanguageAvailability.Status?,
+        isDownloading: Bool,
+        lang: SupportedLanguage
+    ) -> some View {
+        if isDownloading {
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.small)
+                Text("다운로드 중")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.secondary)
+            }
+        } else if let status = status {
+            switch status {
+            case .installed:
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.green)
+                    Text("설치됨")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Color.green)
+                }
+            case .supported:
+                Button {
+                    store.send(.requestTranslationDownload(lang))
+                } label: {
+                    Text("다운로드")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(DesignTokens.accentBlue)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule().fill(DesignTokens.accentBlue.opacity(0.12))
+                        )
+                }
+                .buttonStyle(.plain)
+                .disabled(store.pendingTranslationDownload != nil)
+            case .unsupported:
+                Text("지원 안 함")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.secondary)
+            @unknown default:
+                EmptyView()
+            }
+        } else {
+            ProgressView().controlSize(.small)
         }
     }
 

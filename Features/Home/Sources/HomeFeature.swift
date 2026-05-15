@@ -37,6 +37,8 @@ public struct HomeReducer {
         public var bottomLanguage: SupportedLanguage = .korean
         // 현재 활성 마이크 패널
         public var activeMic: ActiveMic = .bottom
+        // 번역 모델 다운로드 진행 중인 언어 (nil이면 다운로드 없음)
+        public var pendingTranslationDownload: SupportedLanguage? = nil
 
         public init() {
             self.appLanguage = UserDefaults.standard.string(forKey: "appLanguage") ?? ""
@@ -71,6 +73,9 @@ public struct HomeReducer {
         // 전체화면 TTS
         case speakExpanded(String, SupportedLanguage)
         case stopSpeakingExpanded
+        // 번역 모델 다운로드
+        case requestTranslationDownload(SupportedLanguage)
+        case translationDownloadFinished
     }
 
     @Dependency(\.ttsClient) var ttsClient
@@ -221,6 +226,16 @@ public struct HomeReducer {
             case .stopSpeakingExpanded:
                 state.translation.isSpeaking = false
                 ttsClient.stop()
+                return .none
+
+            // MARK: - 번역 모델 다운로드
+
+            case .requestTranslationDownload(let lang):
+                state.pendingTranslationDownload = lang
+                return .none
+
+            case .translationDownloadFinished:
+                state.pendingTranslationDownload = nil
                 return .none
 
             // MARK: - 자동 TTS / 번역 연결

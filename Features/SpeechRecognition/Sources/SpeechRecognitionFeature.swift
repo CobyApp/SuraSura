@@ -22,6 +22,7 @@ public struct SpeechRecognitionReducer {
         case recognizedTextUpdated(String)
         case languageChanged(SupportedLanguage)
         case errorOccurred(String)
+        case errorDismissed
     }
 
     @Dependency(\.speechClient) var speechClient
@@ -38,7 +39,7 @@ public struct SpeechRecognitionReducer {
                 let language = state.sourceLanguage
                 return .run { send in
                     do {
-                        for await text in try speechClient.startStreaming(language) {
+                        for await text in try await speechClient.startStreaming(language) {
                             await send(.recognizedTextUpdated(text))
                         }
                     } catch {
@@ -66,6 +67,10 @@ public struct SpeechRecognitionReducer {
             case .errorOccurred(let message):
                 state.isListening = false
                 state.errorMessage = message
+                return .none
+
+            case .errorDismissed:
+                state.errorMessage = nil
                 return .none
             }
         }

@@ -17,9 +17,21 @@ final class SpeechClientLive: @unchecked Sendable {
 
     private init() {}
 
-    func startStreaming(_ language: SupportedLanguage) throws -> AsyncStream<String> {
-        let locale = language.sttLocale
+    func startStreaming(_ language: SupportedLanguage) async throws -> AsyncStream<String> {
+        // 1) Speech Recognition 권한 확인/요청
+        let speechStatus = await Self.requestSpeechAuthorization()
+        guard speechStatus == .authorized else {
+            throw SpeechClientError.notAuthorized
+        }
 
+        // 2) 마이크 권한 확인/요청
+        let micGranted = await AVAudioApplication.requestRecordPermission()
+        guard micGranted else {
+            throw SpeechClientError.notAuthorized
+        }
+
+        // 3) 해당 언어의 on-device recognizer 가용성 확인
+        let locale = language.sttLocale
         guard let recognizer = SFSpeechRecognizer(locale: locale),
               recognizer.supportsOnDeviceRecognition,
               recognizer.isAvailable else {
@@ -100,5 +112,13 @@ final class SpeechClientLive: @unchecked Sendable {
         recognitionTask = nil
         recognizer = nil
         try? AVAudioSession.sharedInstance().setActive(false)
+    }
+
+    private static func requestSpeechAuthorization() async -> SFSpeechRecognizerAuthorizationStatus {
+        await withCheckedContinuation { cont in
+            SFSpeechRecognizer.requestAuthorization { status in
+                cont.resume(returning: status)
+            }
+        }
     }
 }

@@ -7,7 +7,7 @@ import Foundation
 @DependencyClient
 public struct SpeechClient: Sendable {
     /// 실시간 스트리밍 STT 시작 - AsyncStream으로 인식 텍스트 방출
-    public var startStreaming: @Sendable (_ language: SupportedLanguage) throws -> AsyncStream<String> = { _ in
+    public var startStreaming: @Sendable (_ language: SupportedLanguage) async throws -> AsyncStream<String> = { _ in
         AsyncStream { _ in }
     }
     /// 스트리밍 중지
@@ -21,7 +21,7 @@ extension SpeechClient: DependencyKey {
         let live = SpeechClientLive.shared
         return SpeechClient(
             startStreaming: { language in
-                try live.startStreaming(language)
+                try await live.startStreaming(language)
             },
             stopStreaming: {
                 await live.stopStreaming()
@@ -52,12 +52,15 @@ extension DependencyValues {
 // MARK: - Errors
 
 public enum SpeechClientError: LocalizedError, Sendable {
+    case notAuthorized
     case onDeviceRecognitionUnavailable
 
     public var errorDescription: String? {
         switch self {
+        case .notAuthorized:
+            return "음성 인식 권한이 필요합니다. 설정 → SuraSura에서 권한을 허용해주세요."
         case .onDeviceRecognitionUnavailable:
-            return "이 언어의 온디바이스 음성 인식을 사용할 수 없습니다."
+            return "이 언어의 온디바이스 음성 인식을 사용할 수 없습니다. 설정 → 일반 → 키보드 → 받아쓰기에 해당 언어를 추가하세요."
         }
     }
 }

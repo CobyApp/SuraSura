@@ -118,6 +118,15 @@ public struct HomeView: View {
                 target: translationTarget
             )
         }
+        .alert(
+            "오류",
+            isPresented: Binding(
+                get: { store.speechRecognition.errorMessage != nil },
+                set: { if !$0 { store.send(.speechRecognition(.errorDismissed)) } }
+            ),
+            actions: { Button("확인", role: .cancel) {} },
+            message: { Text(store.speechRecognition.errorMessage ?? "") }
+        )
     }
 
     // MARK: - 번역 패널 (상단)

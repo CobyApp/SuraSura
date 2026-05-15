@@ -7,15 +7,15 @@ public struct TranslationClient: Sendable {
     /// 텍스트 번역 요청 (source/target 모두 명시)
     public var translate: @Sendable (
         _ text: String,
-        _ target: SupportedLanguage,
-        _ source: SupportedLanguage
+        _ source: SupportedLanguage,
+        _ target: SupportedLanguage
     ) async throws -> String = { _, _, _ in "" }
 }
 
 extension TranslationClient: DependencyKey {
     public static var liveValue: TranslationClient {
         TranslationClient(
-            translate: { text, target, source in
+            translate: { text, source, target in
                 try await TranslationBridge.shared.translate(
                     text: text, source: source, target: target
                 )

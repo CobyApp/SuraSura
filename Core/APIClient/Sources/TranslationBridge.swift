@@ -27,19 +27,25 @@ public final class TranslationBridge {
         source: SupportedLanguage,
         target: SupportedLanguage
     ) async throws -> String {
-        // session이 준비될 때까지 최대 1초 대기 (.translationTask 비동기 주입 대비)
-        let deadline = Date().addingTimeInterval(1.0)
+        // session이 준비될 때까지 최대 10초 대기.
+        // 첫 사용 시 Apple이 모델 다운로드 동의 다이얼로그를 띄우므로 넉넉히 둠.
+        let deadline = ContinuousClock.now.advanced(by: .seconds(10))
         while session == nil || registeredSource != source || registeredTarget != target {
-            if Date() >= deadline {
+            if ContinuousClock.now >= deadline {
                 throw AppleTranslationError.sessionNotReady
             }
-            try await Task.sleep(nanoseconds: 50_000_000)
+            try await Task.sleep(for: .milliseconds(50))
         }
         guard let session = session else {
             throw AppleTranslationError.sessionNotReady
         }
-        let response = try await session.translate(text)
-        return response.targetText
+
+        do {
+            let response = try await session.translate(text)
+            return response.targetText
+        } catch {
+            throw AppleTranslationError.translationFailed
+        }
     }
 }
 

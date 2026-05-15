@@ -449,15 +449,15 @@ public struct TranslationClient: Sendable {
     /// 텍스트 번역 요청 (source/target 모두 명시)
     public var translate: @Sendable (
         _ text: String,
-        _ target: SupportedLanguage,
-        _ source: SupportedLanguage
+        _ source: SupportedLanguage,
+        _ target: SupportedLanguage
     ) async throws -> String = { _, _, _ in "" }
 }
 
 extension TranslationClient: DependencyKey {
     public static var liveValue: TranslationClient {
         TranslationClient(
-            translate: { text, target, source in
+            translate: { text, source, target in
                 try await TranslationBridge.shared.translate(
                     text: text, source: source, target: target
                 )
@@ -645,7 +645,7 @@ git commit -m "feat(APIClient): TTSClient liveValue를 AVSpeechSynthesizer 기�
                 let targetLang = state.targetLanguage
                 return .run { send in
                     do {
-                        let result = try await translationClient.translate(text, targetLang, source)
+                        let result = try await translationClient.translate(text, source, targetLang)
                         await send(.translationCompleted(result))
                     } catch {
                         await send(.errorOccurred(error.localizedDescription))
@@ -1056,7 +1056,7 @@ grep -rn "Google\|googleCloud\|GOOGLE_CLOUD" Core Features App Project.swift 2>/
 - **Placeholder scan**: TBD/TODO/"적절히 처리" 없음. 모든 코드 블록 완전.
 - **Type consistency**:
   - `SpeechClient.startStreaming(_ language:)`, `SpeechClient.stopStreaming()` — 일관
-  - `TranslationClient.translate(text, target, source)` — Task 4, 6에서 동일 순서로 사용
+  - `TranslationClient.translate(text, source, target)` — Task 4, 6에서 동일 순서로 사용 (Task 4 구현 중 readability 위해 plan 원본의 target/source 순서를 swap)
   - `TranslationBridge.translate(text:source:target:)` / `register(session:source:target:)` — Task 4, 6에서 일관
   - `TTSClient.speak(text, language)` — 기존 인터페이스 유지
   - `SupportedLanguage.bcp47Code` / `sttLocale` — Task 2에서 도입, Task 3·4·5·6에서 사용, Task 7에서 정착

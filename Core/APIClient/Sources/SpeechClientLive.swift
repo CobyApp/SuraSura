@@ -10,6 +10,7 @@ final class SpeechClientLive: @unchecked Sendable {
     static let shared = SpeechClientLive()
 
     private var audioEngine = AVAudioEngine()
+    private var recognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
 
@@ -21,10 +22,15 @@ final class SpeechClientLive: @unchecked Sendable {
         guard let recognizer = SFSpeechRecognizer(locale: locale),
               recognizer.supportsOnDeviceRecognition,
               recognizer.isAvailable else {
-            return AsyncStream { $0.finish() }
+            throw SpeechClientError.onDeviceRecognitionUnavailable
         }
+        self.recognizer = recognizer
 
         return AsyncStream { continuation in
+            continuation.onTermination = { @Sendable [weak self] _ in
+                Task { await self?.stopStreaming() }
+            }
+
             Task {
                 let request = SFSpeechAudioBufferRecognitionRequest()
                 request.shouldReportPartialResults = true
@@ -44,6 +50,7 @@ final class SpeechClientLive: @unchecked Sendable {
                     }
                     try self.audioEngine.start()
                 } catch {
+                    try? AVAudioSession.sharedInstance().setActive(false)
                     continuation.finish()
                     return
                 }
@@ -67,6 +74,7 @@ final class SpeechClientLive: @unchecked Sendable {
         recognitionTask?.cancel()
         recognitionRequest = nil
         recognitionTask = nil
+        recognizer = nil
         try? AVAudioSession.sharedInstance().setActive(false)
     }
 }

@@ -48,3 +48,16 @@ extension DependencyValues {
         set { self[SpeechClient.self] = newValue }
     }
 }
+
+// MARK: - Errors
+
+public enum SpeechClientError: LocalizedError, Sendable {
+    case onDeviceRecognitionUnavailable
+
+    public var errorDescription: String? {
+        switch self {
+        case .onDeviceRecognitionUnavailable:
+            return "이 언어의 온디바이스 음성 인식을 사용할 수 없습니다."
+        }
+    }
+}

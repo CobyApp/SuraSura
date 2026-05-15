@@ -9,7 +9,7 @@ final class AppleTTSClientLive: NSObject, @unchecked Sendable {
     private let synthesizer = AVSpeechSynthesizer()
     private var continuation: CheckedContinuation<Void, Never>?
 
-    override init() {
+    private override init() {
         super.init()
         synthesizer.delegate = self
     }

@@ -3,11 +3,14 @@ import ComposableArchitecture
 import APIClient
 import DesignSystem
 import Translation
+import Speech
+import UIKit
 
 struct SettingsView: View {
     let store: StoreOf<HomeReducer>
 
     @State private var modelStatus: [SupportedLanguage: LanguageAvailability.Status] = [:]
+    @State private var sttStatus: [SupportedLanguage: Bool] = [:]
 
     private var bundle: Bundle {
         Bundle.localizedModule(language: store.appLanguage)
@@ -33,6 +36,7 @@ struct SettingsView: View {
                     appearanceCard
                     translationCard
                     modelsCard
+                    sttCard
                     versionFooter
                 }
                 .padding(.horizontal, 20)
@@ -43,6 +47,12 @@ struct SettingsView: View {
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .task(id: pivotLanguage) {
             await refreshModelStatus()
+        }
+        .task {
+            refreshSttStatus()
+        }
+        .onChange(of: store.isSettingsPresented) { _, isPresented in
+            if isPresented { refreshSttStatus() }
         }
         .translationTask(downloadConfiguration) { session in
             try? await session.prepareTranslation()
@@ -332,6 +342,113 @@ struct SettingsView: View {
             }
         } else {
             ProgressView().controlSize(.small)
+        }
+    }
+
+    // MARK: - 음성 인식 모델 카드
+
+    private var sttCard: some View {
+        settingsCard(
+            icon: "mic.fill",
+            iconColor: Color.red,
+            title: "음성 인식 모델"
+        ) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("iOS의 받아쓰기 언어와 연동됩니다. 미설치 언어는 아래 버튼으로 iOS 설정에서 추가하세요.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.bottom, 2)
+
+                Button(action: openDictationSettings) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.up.forward.app.fill")
+                            .font(.system(size: 14))
+                        Text("iOS 설정에서 받아쓰기 언어 관리")
+                            .font(.system(size: 13, weight: .semibold))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .bold))
+                            .opacity(0.5)
+                    }
+                    .foregroundStyle(DesignTokens.accentBlue)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(DesignTokens.accentBlue.opacity(0.10))
+                    )
+                }
+                .buttonStyle(.plain)
+                .padding(.bottom, 4)
+
+                let langs = Array(SupportedLanguage.allCases)
+                ForEach(Array(langs.enumerated()), id: \.element) { idx, lang in
+                    sttRow(lang)
+                    if idx < langs.count - 1 {
+                        Divider().padding(.leading, 44).opacity(0.4)
+                    }
+                }
+            }
+            .padding(.top, 2)
+        }
+    }
+
+    private func sttRow(_ lang: SupportedLanguage) -> some View {
+        let supported = sttStatus[lang] ?? false
+        return HStack(spacing: 12) {
+            Text(lang.flag)
+                .font(.system(size: 20))
+                .frame(width: 28)
+            Text(lang.localizedName(in: store.appLanguage))
+                .font(.system(size: 16))
+                .foregroundStyle(Color.primary)
+            Spacer()
+            if supported {
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.green)
+                    Text("설치됨")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Color.green)
+                }
+            } else {
+                Text("미설치")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.secondary)
+            }
+        }
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func refreshSttStatus() {
+        var newStatus: [SupportedLanguage: Bool] = [:]
+        for lang in SupportedLanguage.allCases {
+            let installed = SFSpeechRecognizer(locale: lang.sttLocale)?.supportsOnDeviceRecognition ?? false
+            newStatus[lang] = installed
+        }
+        sttStatus = newStatus
+    }
+
+    private func openDictationSettings() {
+        // 후보 URL을 순서대로 시도: 키보드/받아쓰기 직링크 → 일반 → 루트 → 앱 설정
+        let candidates: [String] = [
+            "App-prefs:General&path=Keyboard/DICTATION",
+            "App-prefs:Keyboard",
+            "App-prefs:General",
+            "App-prefs:",
+            UIApplication.openSettingsURLString,
+        ]
+        openURLCandidates(candidates, index: 0)
+    }
+
+    private func openURLCandidates(_ candidates: [String], index: Int) {
+        guard index < candidates.count, let url = URL(string: candidates[index]) else { return }
+        UIApplication.shared.open(url, options: [:]) { success in
+            if !success {
+                openURLCandidates(candidates, index: index + 1)
+            }
         }
     }
 

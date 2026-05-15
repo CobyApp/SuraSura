@@ -4,7 +4,7 @@ import ProjectDescription
 
 let developmentTeamId: String = "3Y8YH8GWMM"
 let bundleIdPrefix = "com.coby.surasura"
-let deploymentTarget = DeploymentTargets.iOS("17.4")
+let deploymentTarget = DeploymentTargets.iOS("18.0")
 
 // MARK: - Target Settings Helpers
 
@@ -17,7 +17,7 @@ func frameworkSettings() -> Settings {
     ])
 }
 
-/// 앱 타겟용 settings (서명 + Secrets.xcconfig로 API Key 주입)
+/// 앱 타겟용 settings (서명)
 /// - Debug: Automatic signing (개발용)
 /// - Release: Manual signing (CI/CD App Store 배포용)
 func appSettings() -> Settings {
@@ -31,12 +31,12 @@ func appSettings() -> Settings {
             .debug(name: "Debug", settings: [
                 "CODE_SIGN_STYLE": "Automatic",
                 "CODE_SIGN_IDENTITY": "Apple Development",
-            ], xcconfig: "Secrets.xcconfig"),
+            ]),
             .release(name: "Release", settings: [
                 "CODE_SIGN_STYLE": "Manual",
                 "CODE_SIGN_IDENTITY": "Apple Distribution",
                 "PROVISIONING_PROFILE_SPECIFIER": "SuraSura AppStore",
-            ], xcconfig: "Secrets.xcconfig"),
+            ]),
         ]
     )
 }
@@ -71,7 +71,6 @@ let project = Project(
                 "CFBundleDisplayName": "すらすら",
                 "CFBundleShortVersionString": "1.0.0",
                 "CFBundleVersion": "1",
-                "GOOGLE_CLOUD_API_KEY": "$(GOOGLE_CLOUD_API_KEY)",
                 "NSMicrophoneUsageDescription": "실시간 통역을 위해 마이크가 필요합니다.",
                 "NSSpeechRecognitionUsageDescription": "실시간 음성 인식을 위해 권한이 필요합니다.",
                 "UILaunchScreen": [:],

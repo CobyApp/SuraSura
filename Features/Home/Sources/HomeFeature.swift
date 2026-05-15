@@ -230,7 +230,8 @@ public struct HomeReducer {
                 return .send(.translation(.speakRequested))
 
             case .speechRecognition(.recognizedTextUpdated(let text)):
-                return .send(.translation(.translateRequested(text)))
+                let source = state.speechRecognition.sourceLanguage
+                return .send(.translation(.translateRequested(text, source)))
 
             case .speechRecognition, .translation:
                 return .none

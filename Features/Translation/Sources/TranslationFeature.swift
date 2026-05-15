@@ -17,7 +17,7 @@ public struct TranslationReducer {
     }
 
     public enum Action {
-        case translateRequested(String)
+        case translateRequested(String, SupportedLanguage)  // text, source
         case translationCompleted(String)
         case speakRequested
         case speakingFinished
@@ -26,7 +26,7 @@ public struct TranslationReducer {
         case errorOccurred(String)
     }
 
-    @Dependency(\.googleTranslationClient) var translationClient
+    @Dependency(\.translationClient) var translationClient
     @Dependency(\.ttsClient) var ttsClient
 
     public init() {}
@@ -35,13 +35,13 @@ public struct TranslationReducer {
         Reduce { state, action in
             switch action {
 
-            case .translateRequested(let text):
+            case .translateRequested(let text, let source):
                 guard !text.isEmpty else { return .none }
                 state.isTranslating = true
                 let targetLang = state.targetLanguage
                 return .run { send in
                     do {
-                        let result = try await translationClient.translate(text, targetLang)
+                        let result = try await translationClient.translate(text, source, targetLang)
                         await send(.translationCompleted(result))
                     } catch {
                         await send(.errorOccurred(error.localizedDescription))

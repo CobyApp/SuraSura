@@ -24,7 +24,7 @@ public struct SpeechRecognitionReducer {
         case errorOccurred(String)
     }
 
-    @Dependency(\.googleSpeechClient) var speechClient
+    @Dependency(\.speechClient) var speechClient
 
     public init() {}
 

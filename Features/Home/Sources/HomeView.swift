@@ -2,6 +2,7 @@ import SwiftUI
 import ComposableArchitecture
 import APIClient
 import DesignSystem
+import Translation
 
 // DesignTokens.accentBlue 를 짧게 참조하기 위한 파일 스코프 별칭
 private let kBlue = DesignTokens.accentBlue
@@ -22,6 +23,21 @@ public struct HomeView: View {
 
     private func l(_ key: String) -> String {
         appBundle.localizedString(forKey: key, value: nil, table: nil)
+    }
+
+    private var translationSource: SupportedLanguage {
+        store.activeMic == .top ? store.topLanguage : store.bottomLanguage
+    }
+
+    private var translationTarget: SupportedLanguage {
+        store.activeMic == .top ? store.bottomLanguage : store.topLanguage
+    }
+
+    private var translationConfiguration: TranslationSession.Configuration {
+        TranslationSession.Configuration(
+            source: Locale.Language(identifier: translationSource.bcp47Code),
+            target: Locale.Language(identifier: translationTarget.bcp47Code)
+        )
     }
 
     public var body: some View {
@@ -94,6 +110,13 @@ public struct HomeView: View {
                 onClose: { store.send(.collapseBottomPanel) }
             )
             .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
+        }
+        .translationTask(translationConfiguration) { session in
+            await TranslationBridge.shared.register(
+                session: session,
+                source: translationSource,
+                target: translationTarget
+            )
         }
     }
 

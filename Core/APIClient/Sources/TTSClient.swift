@@ -14,9 +14,11 @@ public struct TTSClient: Sendable {
 
 extension TTSClient: DependencyKey {
     public static var liveValue: TTSClient {
-        let live = GoogleTTSClientLive.shared
+        let live = AppleTTSClientLive.shared
         return TTSClient(
-            speak: { text, language in try await live.speak(text: text, language: language) },
+            speak: { text, language in
+                await live.speak(text: text, language: language)
+            },
             stop: { live.stop() }
         )
     }

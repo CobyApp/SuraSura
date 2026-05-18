@@ -4,10 +4,6 @@ import SpeechRecognitionFeature
 import TranslationFeature
 import APIClient
 
-public enum AppColorScheme: String, CaseIterable, Equatable {
-    case system, light, dark
-}
-
 public enum ActiveMic: String, Equatable, CaseIterable {
     case bottom, top
 }
@@ -21,7 +17,6 @@ public struct HomeReducer {
         public var translation: TranslationReducer.State = .init()
         public var isSessionActive: Bool = false
         public var isFaceToFaceMode: Bool = false
-        public var appColorScheme: AppColorScheme = .system
         public var isSettingsPresented: Bool = false
         public var isAutoSpeakEnabled: Bool = true
         // 커스텀 언어 피커
@@ -55,7 +50,6 @@ public struct HomeReducer {
         case bottomLanguageChanged(SupportedLanguage)
         case swapLanguagesTapped
         case toggleFaceToFaceTapped
-        case colorSchemeChanged(AppColorScheme)
         case settingsTapped
         case settingsDismissed
         case autoSpeakToggled
@@ -161,10 +155,6 @@ public struct HomeReducer {
 
             case .toggleFaceToFaceTapped:
                 state.isFaceToFaceMode.toggle()
-                return .none
-
-            case .colorSchemeChanged(let scheme):
-                state.appColorScheme = scheme
                 return .none
 
             case .settingsTapped:

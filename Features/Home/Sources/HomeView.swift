@@ -62,7 +62,7 @@ public struct HomeView: View {
                 }
             }
         }
-        .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
+        .preferredColorScheme(.light)
         .sheet(isPresented: settingsBinding) {
             SettingsView(store: store)
                 .presentationDetents([.medium, .large])
@@ -88,7 +88,7 @@ public struct HomeView: View {
                 onStopSpeak: { store.send(.stopSpeakingExpanded) },
                 onClose: { store.send(.collapseTopPanel) }
             )
-            .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
+            .preferredColorScheme(.light)
         }
         // 인식 텍스트 전체화면
         .fullScreenCover(isPresented: Binding(
@@ -109,7 +109,7 @@ public struct HomeView: View {
                 onStopSpeak: { store.send(.stopSpeakingExpanded) },
                 onClose: { store.send(.collapseBottomPanel) }
             )
-            .preferredColorScheme(store.appColorScheme.swiftUIColorScheme)
+            .preferredColorScheme(.light)
         }
         .translationTask(translationConfiguration) { session in
             await TranslationBridge.shared.register(

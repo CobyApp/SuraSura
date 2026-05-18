@@ -33,7 +33,6 @@ struct SettingsView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
                     languageCard
-                    appearanceCard
                     translationCard
                     modelsCard
                     sttCard
@@ -163,54 +162,6 @@ struct SettingsView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-    }
-
-    // MARK: - 외관 카드
-
-    private var appearanceCard: some View {
-        settingsCard(
-            icon: "paintbrush.fill",
-            iconColor: Color.purple,
-            title: String(localized: "settings.appearance", bundle: bundle)
-        ) {
-            HStack(spacing: 8) {
-                ForEach(AppColorScheme.allCases, id: \.self) { scheme in
-                    appearanceSegment(scheme)
-                }
-            }
-            .padding(.top, 2)
-        }
-    }
-
-    private func appearanceSegment(_ scheme: AppColorScheme) -> some View {
-        let isSelected = store.appColorScheme == scheme
-        return Button { store.send(.colorSchemeChanged(scheme)) } label: {
-            VStack(spacing: 8) {
-                Image(systemName: scheme.icon)
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(isSelected ? DesignTokens.accentBlue : Color.secondary)
-                Text(scheme.shortLabel(bundle: bundle))
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(isSelected ? DesignTokens.accentBlue : Color.secondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? DesignTokens.accentBlue.opacity(0.1) : Color(.tertiarySystemFill))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(
-                        isSelected ? DesignTokens.accentBlue.opacity(0.45) : Color.clear,
-                        lineWidth: 1.5
-                    )
-            )
-        }
-        .buttonStyle(.plain)
-        .animation(.easeInOut(duration: 0.15), value: store.appColorScheme)
     }
 
     // MARK: - 번역 카드
@@ -498,35 +449,3 @@ struct SettingsView: View {
     }
 }
 
-// MARK: - AppColorScheme UI Extensions
-
-extension AppColorScheme {
-    func label(bundle: Bundle = .module) -> String {
-        switch self {
-        case .system: return String(localized: "settings.appearance.system", bundle: bundle)
-        case .light:  return String(localized: "settings.appearance.light", bundle: bundle)
-        case .dark:   return String(localized: "settings.appearance.dark", bundle: bundle)
-        }
-    }
-    func shortLabel(bundle: Bundle = .module) -> String {
-        switch self {
-        case .system: return String(localized: "settings.appearance.system.short", bundle: bundle)
-        case .light:  return String(localized: "settings.appearance.light.short", bundle: bundle)
-        case .dark:   return String(localized: "settings.appearance.dark.short", bundle: bundle)
-        }
-    }
-    var icon: String {
-        switch self {
-        case .system: return "circle.lefthalf.filled"
-        case .light:  return "sun.max.fill"
-        case .dark:   return "moon.fill"
-        }
-    }
-    public var swiftUIColorScheme: ColorScheme? {
-        switch self {
-        case .system: return nil
-        case .light:  return .light
-        case .dark:   return .dark
-        }
-    }
-}

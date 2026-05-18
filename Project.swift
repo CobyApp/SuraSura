@@ -51,7 +51,7 @@ let project = Project(
     ),
     settings: .settings(
         base: [
-            "MARKETING_VERSION": "1.0",
+            "MARKETING_VERSION": "1.0.1",
             "CURRENT_PROJECT_VERSION": "7",
         ],
         configurations: [
@@ -69,7 +69,7 @@ let project = Project(
             deploymentTargets: deploymentTarget,
             infoPlist: .extendingDefault(with: [
                 "CFBundleDisplayName": "すらすら",
-                "CFBundleShortVersionString": "1.0.0",
+                "CFBundleShortVersionString": "1.0.1",
                 "CFBundleVersion": "1",
                 "NSMicrophoneUsageDescription": "실시간 통역을 위해 마이크가 필요합니다.",
                 "NSSpeechRecognitionUsageDescription": "실시간 음성 인식을 위해 권한이 필요합니다.",

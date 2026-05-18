@@ -406,7 +406,8 @@ struct SettingsView: View {
     // MARK: - 버전
 
     private var versionFooter: some View {
-        Text("v1.0.0")
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        return Text("v\(version)")
             .font(.system(size: 12))
             .foregroundStyle(Color(.tertiaryLabel))
             .frame(maxWidth: .infinity, alignment: .center)
